@@ -1,0 +1,5 @@
+#!/bin/bash
+
+version_tag=${VERSION:-latest}
+
+docker build . -t fika-server:$version_tag
