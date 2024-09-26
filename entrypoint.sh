@@ -24,6 +24,8 @@ fika_release_url="https://github.com/project-fika/Fika-Server/releases/download/
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
 
+take_ownership=${TAKE_OWNERSHIP:-true}
+
 create_running_user() {
     echo "Checking running user/group: $uid:$gid"
     getent group $gid || groupadd -g $gid spt
@@ -61,10 +63,23 @@ validate() {
     fi
 }
 
+make_and_own_spt_dirs() {
+    mkdir -p $mounted_dir/user/mods
+    mkdir -p $mounted_dir/user/profiles
+    change_owner
+}
+
+change_owner() {
+    if [[ "$take_ownership" == "true" ]]; then
+        echo "Changing owner of serverfiles to $uid:$gid"
+        chown -R ${uid}:${gid} $mounted_dir
+    fi
+}
+
 #####*##
 # Fika #
 ########
-get_and_install_fika() {
+install_fika_mod() {
     echo "Installing Fika servermod version $fika_version"
     # Assumes fika_server.zip artifact contains user/mods/fika-server
     curl -sL $fika_release_url -O
@@ -86,7 +101,7 @@ try_update_fika() {
     # Backup entire fika servermod, then delete and update servermod
     backup_fika
     rm -r $fika_mod_dir
-    get_and_install_fika
+    install_fika_mod
     # restore config
     cp $fika_backup_dir/fika-server/assets/config.jsonc $fika_mod_dir/assets/config.jsonc
 }
@@ -94,12 +109,6 @@ try_update_fika() {
 #######
 # SPT #
 #######
-make_and_own_spt_dirs() {
-    mkdir -p $mounted_dir/user/mods
-    mkdir -p $mounted_dir/user/profiles
-    chown -R ${uid}:${gid} $mounted_dir
-}
-
 install_spt() {
     cp -r $build_dir/* $mounted_dir
     make_and_own_spt_dirs
@@ -139,7 +148,7 @@ fi
 # Install fika if requested. Run each boot to support installing in existing serverfiles that don't have fika installed
 if [[ "$install_fika" == "true" ]]; then
     if [[ ! -d $fika_mod_dir ]]; then
-        get_and_install_fika
+        install_fika_mod
     else 
         echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
     fi
@@ -148,8 +157,6 @@ fi
 create_running_user
 
 # Own mounted files as running user
-# TODO Do we want to do this? Would it be annoying if user expects files ownership not to change?
-# downside is we are running as a specific user so any files created by the server binary will be owned by the running user
-chown -R ${uid}:${gid} $mounted_dir
+change_owner
 
 su - $(id -nu $uid) -c "cd $mounted_dir && ./SPT.Server.exe"

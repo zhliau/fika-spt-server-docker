@@ -9,12 +9,11 @@ services:
       - GID=1000
       # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
       # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
-      - INSTALL_FIKA=false
+      - INSTALL_FIKA=true
       # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
       - AUTO_UPDATE_SPT=true
       # If you want the container to update Fika automatically if it detects the Fika server version does not match expected version, set this to true
       - AUTO_UPDATE_FIKA=true
     volumes:
-      # Set this to the directory on your host containing your SPT server files
-      #- ./path/to/server/files:/opt/server
-      - ./test:/opt/server
+      # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
+      - ./path/to/server/files:/opt/server
