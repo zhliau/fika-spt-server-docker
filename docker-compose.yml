@@ -1,6 +1,6 @@
 services:
   fika-server:
-    image: fika-spt-server:latest
+    image: ghcr.io/zhliau/fika-spt-server-docker:latest
     ports:
       - 6969:6969
     environment:
@@ -9,7 +9,7 @@ services:
       - GID=1000
       # If you want to auto-install fika, set this to true.
       # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
-      - INSTALL_FIKA=true
+      - INSTALL_FIKA=false
     volumes:
       # Set this to the directory on your host containing your SPT server files
       - ./path/to/server/files:/opt/server
