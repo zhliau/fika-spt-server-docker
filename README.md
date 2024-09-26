@@ -15,13 +15,13 @@ The image has everything else you need to run an SPT Server, with Fika if desire
   * [docker](#docker)
   * [docker-compose](#docker-compose)
   * [Using an existing installation](#using-an-existing-installation)
-  * [Updating SPT/Fika versions](#updating-spt-fika-versions)
+  * [Updating SPT/Fika versions](#updating-sptfika-versions)
     + [When Fika server mod is updated for the same SPT version](#when-fika-server-mod-is-updated-for-the-same-spt-version)
     + [When SPT updates](#when-spt-updates)
 - [Environment Variables](#environment-variables)
 - [FAQ](#faq)
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files-)
-  * [Can I use this without Fika?](#can-i-use-this-without-fika-)
+  * [Can I use this without Fika?](#can-i-use-this-without-fika)
   * [Development](#development)
     + [Building](#building)
 
@@ -43,7 +43,7 @@ Check the pane on the right for the different version tags available, if you don
 # 🛫 Running
 ## docker
 ```
-docker run --name fika-serevr \
+docker run --name fika-server \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
   ghcr.io/zhliau/fika-spt-server-docker:3.9.8 
