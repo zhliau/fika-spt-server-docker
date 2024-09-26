@@ -1,30 +1,66 @@
 #!/bin/bash -e
 
-BUILD_DIR=/opt/build
-MOUNTED_DIR=/opt/server
-SPT_BINARY=SPT.Server.exe
+build_dir=/opt/build
+mounted_dir=/opt/server
+spt_binary=SPT.Server.exe
+uid=${UID:-1000}
+gid=${GID:-1000}
+
+install_fika=${INSTALL_FIKA:-true}
+fika_mod_dir=fika-server
+fika_version=v2.2.8
+fika_artifact=fika-server.zip
+fika_release_url="https://github.com/project-fika/Fika-Server/releases/download/$fika_version/$fika_artifact"
 
 make_and_own() {
-    mkdir -p $MOUNTED_DIR/user/mods
-    mkdir -p $MOUNTED_DIR/user/profiles
-
-    # TODO Make this configurable
-    # Do not have root own this mounted dir, this sucks for the host
-    chown -R 1000:1000 $MOUNTED_DIR
+    mkdir -p $mounted_dir/user/mods
+    mkdir -p $mounted_dir/user/profiles
 }
 
-# Must mount /opt/server directory, otherwise the server will spin up and there's no way you can modify it
-if [[ ! $(mount | grep $MOUNTED_DIR) ]]; then
-    echo "Please mount a volume/directory from the host to $MOUNTED_DIR. The server must store files on the host."
+create_running_user() {
+    echo "Checking running user/group: $uid:$gid"
+    getent group $gid || groupadd -g $gid spt
+    if [[ ! $(id -un $uid) ]]; then
+        echo "User not found, creating user 'spt' with id $uid"
+        useradd --create-home -u $uid -g $gid spt
+    fi
+}
+
+get_and_install_fika() {
+    echo "Installing Fika servermod version $fika_version"
+    # Assumes fika_server.zip artifact contains user/mods/fika-server
+    curl -sL $fika_release_url -O
+    unzip -q $fika_artifact -d $mounted_dir
+}
+
+# Must mount /opt/server directory, otherwise the serverfiles are in container and there's no persistence
+if [[ ! $(mount | grep $mounted_dir) ]]; then
+    echo "Please mount a volume/directory from the host to $mounted_dir. The server must store files on the host."
     echo "You can do this with docker run's -v flag e.g. '-v /path/on/host:/opt/server'"
+    echo "or with docker-compose's 'volumes' directive"
     exit 1
 fi
 
 # If no server files in this directory, copy our built files in here and run it once
-if [[ ! -f "$MOUNTED_DIR/$SPT_BINARY" ]]; then
+if [[ ! -f "$mounted_dir/$spt_binary" ]]; then
     echo "Server files not found, initializing first boot..."
-    cp -r $BUILD_DIR/* $MOUNTED_DIR
+    cp -r $build_dir/* $mounted_dir
     make_and_own
+else
+    echo "Found server files, skipping init"
 fi
 
-./SPT.Server.exe
+# TODO should fika install be first time run only?
+if [[ "$install_fika" == "true" ]]; then
+    if [[ ! -d $mounted_dir/user/mods/$fika_mod_dir ]]; then
+        get_and_install_fika
+    else 
+        echo "Fika install requested but fika servermod already exists, skipping installation"
+    fi
+fi
+
+create_running_user
+# Own mounted files as running user
+chown -R ${uid}:${gid} $mounted_dir
+
+su - $(id -nu $uid) -c "cd $mounted_dir && ./SPT.Server.exe"

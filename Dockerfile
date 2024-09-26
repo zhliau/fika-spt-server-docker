@@ -9,7 +9,8 @@ RUN apt update && apt install -y --no-install-recommends \
     curl \
     ca-certificates \
     git \
-    git-lfs
+    git-lfs \
+    unzip
 
 # asdf version manager
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1
