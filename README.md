@@ -9,7 +9,25 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 
 The image has everything else you need to run an SPT Server, with Fika if desired.
 
-### 🪄 Features 🪄
+- [🪄 Features 🪄](#---features---)
+- [🥡 Releases](#---releases)
+- [🛫 Running](#---running)
+  * [docker](#docker)
+  * [docker-compose](#docker-compose)
+  * [Using an existing installation](#using-an-existing-installation)
+  * [Updating SPT/Fika versions](#updating-spt-fika-versions)
+    + [When Fika server mod is updated for the same SPT version](#when-fika-server-mod-is-updated-for-the-same-spt-version)
+    + [When SPT updates](#when-spt-updates)
+- [Environment Variables](#environment-variables)
+- [FAQ](#faq)
+  * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files-)
+  * [Can I use this without Fika?](#can-i-use-this-without-fika-)
+  * [Development](#development)
+    + [Building](#building)
+
+
+
+# 🪄 Features 🪄
 - Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.9.8` for SPT `3.9.8`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
@@ -96,14 +114,17 @@ services:
 ```
 
 ### When Fika server mod is updated for the same SPT version
-The image will hopefully be updated to set the correct Fika server mod version, and the image will be rebuilt with the same SPT version tag. Thus, all you will need to do is
+The image will hopefully be updated in a timely manner to the new Fika server mod version, and the image will be rebuilt with the same SPT version tag. Thus, all you will need to do is
 - Pull the image again
 - Restart the container
 
 The container will validate your Fika server mod version matches the image's expected version, and if not it will
 - Back up the entire Fika server mod including configs to a `backups/fika` directory in the mounted server directory
 - Install the expected fika server mod version
-- Copy your old fika config.jsonc into the server mod config directory
+- Copy your old fika.jsonc config into the server mod config directory
+
+> [!NOTE]
+> The existing config is not guaranteed to work across versions. Expect to do some troubleshooting here especially if config options are added/removed in the new Fika server mod version.
 
 ### When SPT updates
 A new image will be tagged with the new SPT version number, and thus you will need to
