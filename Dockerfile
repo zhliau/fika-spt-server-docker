@@ -5,12 +5,10 @@ ARG SPT_SERVER_SHA=3.9.8
 
 USER root
 RUN apt update && apt install -y --no-install-recommends \
-    vim \
     curl \
     ca-certificates \
     git \
-    git-lfs \
-    unzip
+    git-lfs
 
 # asdf version manager
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1
@@ -37,6 +35,12 @@ RUN rm -rf /spt
 
 FROM debian:bookworm-slim
 COPY --from=build /opt/build /opt/build
+
+RUN apt update && apt install -y --no-install-recommends \
+    curl \
+    unzip \
+    vim \
+    jq
 
 WORKDIR /opt/server
 
