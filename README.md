@@ -10,17 +10,17 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 The image has everything else you need to run an SPT Server, with Fika if desired.
 
 ### 🪄 Features 🪄
-- Prepackaged images versioned by SPT version. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup
+- Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.9.8` for SPT `3.9.8`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - Reuse an existing installation of SPT! Just mount your existing SPT server folder
-- Configurable running user and ownership of server files
+- Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
 - (Optional) Auto updates SPT or Fika if we detect a version mismatch
 
 # 🥡 Releases
-The image build is triggered off commits to master and hosted on ghcr
+The image build is triggered off release tags and hosted on ghcr
 ```
 docker pull ghcr.io/zhliau/fika-spt-server-docker:latest
 ```
-Check the pane on the right for the different version tags available, if you don't want to use latest SPT release.
+Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
 # 🛫 Running
 ## docker
