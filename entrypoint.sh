@@ -130,13 +130,19 @@ try_update_spt() {
         exit 1
     fi
 
+    echo "Updating SPT in-place, from $1 to $spt_version"
     # Backup SPT, install new version, then halt
     backup_spt_user_dirs
     install_spt
     echo "SPT update completed. We moved from $1 to $spt_version"
-    echo "WARNING: The user folder has been backed up to $spt_backup_dir but otherwise has been left untouched in the server dir."
-    echo "Please verify your existing mods and profile work with this new SPT version! You may want to delete the mods directory and start from scratch"
-    echo "Restart this container to bring the server back up"
+    echo "  "
+    echo "  ==============="
+    echo "  === WARNING ==="
+    echo "  ==============="
+    echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been left untouched in the server dir."
+    echo "  Please verify your existing mods and profile work with this new SPT version! You may want to delete the mods directory and start from scratch"
+    echo "  Restart this container to bring the server back up"
+    exit 0
 }
 
 validate
