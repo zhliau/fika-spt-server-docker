@@ -6,7 +6,7 @@ spt_binary=SPT.Server.exe
 uid=${UID:-1000}
 gid=${GID:-1000}
 
-install_fika=${INSTALL_FIKA:-true}
+install_fika=${INSTALL_FIKA:-false}
 fika_mod_dir=fika-server
 fika_version=v2.2.8
 fika_artifact=fika-server.zip
@@ -15,6 +15,7 @@ fika_release_url="https://github.com/project-fika/Fika-Server/releases/download/
 make_and_own() {
     mkdir -p $mounted_dir/user/mods
     mkdir -p $mounted_dir/user/profiles
+    chown -R ${uid}:${gid} $mounted_dir
 }
 
 create_running_user() {
@@ -31,6 +32,7 @@ get_and_install_fika() {
     # Assumes fika_server.zip artifact contains user/mods/fika-server
     curl -sL $fika_release_url -O
     unzip -q $fika_artifact -d $mounted_dir
+    rm $fika_artifact
 }
 
 # Must mount /opt/server directory, otherwise the serverfiles are in container and there's no persistence
@@ -41,7 +43,7 @@ if [[ ! $(mount | grep $mounted_dir) ]]; then
     exit 1
 fi
 
-# If no server files in this directory, copy our built files in here and run it once
+# If no server binary in this directory, copy our built files in here and run it once
 if [[ ! -f "$mounted_dir/$spt_binary" ]]; then
     echo "Server files not found, initializing first boot..."
     cp -r $build_dir/* $mounted_dir
@@ -61,6 +63,8 @@ fi
 
 create_running_user
 # Own mounted files as running user
+# TODO Do we want to do this? Would it be annoying if user expects files ownership not to change?
+# downside is we are running as a specific user so any files created by the server binary will be owned by the running user
 chown -R ${uid}:${gid} $mounted_dir
 
 su - $(id -nu $uid) -c "cd $mounted_dir && ./SPT.Server.exe"

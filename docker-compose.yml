@@ -2,11 +2,14 @@ services:
   fika-server:
     image: fika-spt-server:latest
     ports:
-      - 9969:6969
+      - 6969:6969
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000
       - GID=1000
+      # If you want to auto-install fika, set this to true.
+      # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
+      - INSTALL_FIKA=true
     volumes:
       # Set this to the directory on your host containing your SPT server files
-      - ./test:/opt/server
+      - ./path/to/server/files:/opt/server
