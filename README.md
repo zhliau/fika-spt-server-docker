@@ -61,7 +61,7 @@ services:
 
 ## Using an existing installation
 If you want to migrate to this docker image with an existing SPT install:
-> [!WARN]
+> [!WARNING]
 > MAKE BACKUPS OF YOUR EXISTING SPT SERVER FILES.
 - Set your volume mount to your existing SPT server directory (the dir containing the SPT.Server.exe file)
 - If you don't have Fika yet, you can provide a `INSTALL_FIKA` env var to tell the container to install the server mod for you
@@ -98,7 +98,7 @@ The image will validate that your SPT version in the serverfiles matches the ima
 - Install the right version of SPT
 
 > [!NOTE]
-> The user directory in your existing SPT server files are left untouched! Please make sure you validate that the SPT version you are running works with your installed mods and profiles!
+> The user directory in your existing SPT server files is left untouched! Please make sure that you validate that the SPT version you are running works with your installed mods and profiles!
 > You may want to start by removing all mods and validating them one by one
 
 # Environment Variables
