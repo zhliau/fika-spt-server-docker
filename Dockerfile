@@ -38,6 +38,7 @@ COPY --from=build /opt/build /opt/build
 
 RUN apt update && apt install -y --no-install-recommends \
     curl \
+    ca-certificates \
     unzip \
     vim \
     jq

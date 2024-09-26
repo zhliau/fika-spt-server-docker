@@ -9,13 +9,14 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H:%M)
+spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_version=3.9.8
 spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/Server/configs/core.json
 
 install_fika=${INSTALL_FIKA:-false}
-fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H:%M)
+fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
+fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$mounted_dir/user/mods/fika-server
 fika_version=${FIKA_VERSION:-v2.2.8}
 fika_artifact=fika-server.zip
@@ -85,9 +86,11 @@ install_fika_mod() {
     curl -sL $fika_release_url -O
     unzip -q $fika_artifact -d $mounted_dir
     rm $fika_artifact
+    echo "Installation complete"
 }
 
 backup_fika() {
+    mkdir -p $fika_backup_dir
     cp -r $fika_mod_dir $fika_backup_dir
 }
 
@@ -103,7 +106,7 @@ try_update_fika() {
     rm -r $fika_mod_dir
     install_fika_mod
     # restore config
-    cp $fika_backup_dir/fika-server/assets/config.jsonc $fika_mod_dir/assets/config.jsonc
+    cp $fika_backup_dir/fika-server/$fika_config_path $fika_mod_dir/$fika_config_path
 }
 
 #######
@@ -116,6 +119,7 @@ install_spt() {
 
 # TODO Anticipate BepInEx too, for Corter-ModSync
 backup_spt_user_dirs() {
+    mkdir -p $spt_backup_dir
     cp -r $mounted_dir/user $spt_backup_dir/
 }
 
@@ -148,6 +152,7 @@ fi
 # Install fika if requested. Run each boot to support installing in existing serverfiles that don't have fika installed
 if [[ "$install_fika" == "true" ]]; then
     if [[ ! -d $fika_mod_dir ]]; then
+        echo "No Fika server mod detected and install was requested. Beginning installation."
         install_fika_mod
     else 
         echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
