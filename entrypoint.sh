@@ -9,16 +9,16 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_version=3.9.8
+spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/Server/configs/core.json
 
+fika_version=${FIKA_VERSION:-v2.2.8}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$mounted_dir/user/mods/fika-server
-fika_version=${FIKA_VERSION:-v2.2.8}
 fika_artifact=fika-server.zip
 fika_release_url="https://github.com/project-fika/Fika-Server/releases/download/$fika_version/$fika_artifact"
 
@@ -59,7 +59,7 @@ validate() {
         echo "Validating Fika version"
         existing_fika_version=$(jq -r '.version' $fika_mod_dir/package.json)
         if [[ "v$existing_fika_version" != $fika_version ]]; then
-            try_update_fika
+            try_update_fika "v$existing_fika_version"
         fi
     fi
 }
@@ -97,16 +97,19 @@ backup_fika() {
 try_update_fika() {
     if [[ "$auto_update_fika" != "true" ]]; then
         echo "Fika Version mismatch: Fika install requested but existing fika mod server is v$existing_fika_version while this image expects $fika_version"
+        echo "If you wish to use this container to update your Fika server mod, set AUTO_UPDATE_FIKA to true"
         echo "Aborting"
         exit 1
     fi
 
+    echo "Updating Fika servermod in place, from $1 to $fika_version"
     # Backup entire fika servermod, then delete and update servermod
     backup_fika
     rm -r $fika_mod_dir
     install_fika_mod
     # restore config
     cp $fika_backup_dir/fika-server/$fika_config_path $fika_mod_dir/$fika_config_path
+    echo "Successfully updated Fika from $1 to $fika_version"
 }
 
 #######
@@ -126,6 +129,7 @@ backup_spt_user_dirs() {
 try_update_spt() {
     if [[ "$auto_update_spt" != "true" ]]; then
         echo "SPT Version mismatch: existing server files are SPT $existing_spt_version while this image expects $spt_version"
+        echo "If you wish to use this container to update your SPT Server files, set AUTO_UPDATE_SPT to true"
         echo "Aborting"
         exit 1
     fi

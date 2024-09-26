@@ -9,8 +9,8 @@ I aim to provide a fully pre-packaged SPT Docker image with optional Fika mod th
 The image has everything else you need to run an SPT Server, with Fika if desired.
 
 ## Features
+- Prepackaged images versioned by SPT version. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup
 - Reuse an existing installation of SPT! Just mount your existing SPT server folder
-- Prepackaged images versioned by SPT version. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest Fika servermod is downloaded and installed on container startup
 - Configurable running user and ownership of server files
 - (Optional) Auto updates SPT or Fika if we detect a version mismatch
 
@@ -22,6 +22,8 @@ docker pull ghcr.io/zhliau/fika-spt-server-docker:latest
 
 # Running
 See the example docker-compose for a more complete definition
+
+Basic
 ```yaml
 services:
   fika-server:
@@ -78,7 +80,7 @@ services:
       - AUTO_UPDATE_FIKA=true
 ```
 
-### When fika updates servermod
+### When fika server mod is updated
 - Pull the image
 - Restart the container
 
@@ -96,7 +98,7 @@ The image will validate that your SPT version in the serverfiles matches the ima
 - Install the right version of SPT
 
 > [!NOTE]
-> The user directory in your existing files are left untouched! Please make sure you validate that the SPT version you are running works with your installed mods and profiles!
+> The user directory in your existing SPT server files are left untouched! Please make sure you validate that the SPT version you are running works with your installed mods and profiles!
 > You may want to start by removing all mods and validating them one by one
 
 # Environment Variables
@@ -112,11 +114,14 @@ None of these env vars are required, but they may be useful.
 | `TAKE_OWNERSHIP`   | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
 
 
-# Troubleshooting
+# FAQ
 ## Why are there files owned by root in my server files?
 If you don't want the root user to run SPT server, make sure you provide a userID/groupID to the image to use to run the server.
 If none are provided, it defaults to uid 0 which is the root user.
 Running the server with root will mean anything the server writes out is created by the root user.
+
+## Can I use this without Fika?
+Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an SPT Server. Everything else including the autoupdate capability for SPT remains unchanged.
 
 ## Development
 ### Building
