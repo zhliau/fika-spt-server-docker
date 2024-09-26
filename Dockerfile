@@ -29,12 +29,14 @@ ENV PATH="$PATH:/root/.asdf/bin"
 ENV PATH="$PATH:/root/.asdf/shims"
 RUN asdf global nodejs 20.11.1
 
-RUN node -v
 RUN npm install
 RUN npm run build:release
 
 RUN mv build /opt/build
 RUN rm -rf /spt
+
+FROM debian:bookworm-slim
+COPY --from=build /opt/build /opt/build
 
 WORKDIR /opt/server
 
