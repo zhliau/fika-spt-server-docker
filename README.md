@@ -20,10 +20,10 @@ The image has everything else you need to run an SPT Server, with Fika if desire
     + [When SPT updates](#when-spt-updates)
 - [Environment Variables](#environment-variables)
 - [FAQ](#faq)
-  * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files-)
+  * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
   * [Can I use this without Fika?](#can-i-use-this-without-fika)
-  * [Development](#development)
-    + [Building](#building)
+- [Development](#development)
+  * [Building](#building)
 
 
 
