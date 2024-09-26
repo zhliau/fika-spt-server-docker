@@ -9,9 +9,9 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 
 The image has everything else you need to run an SPT Server, with Fika if desired.
 
-- [🪄 Features 🪄](#---features---)
-- [🥡 Releases](#---releases)
-- [🛫 Running](#---running)
+- [🪄 Features 🪄](#-features)
+- [🥡 Releases](#-releases)
+- [🛫 Running](#-running)
   * [docker](#docker)
   * [docker-compose](#docker-compose)
   * [Using an existing installation](#using-an-existing-installation)
