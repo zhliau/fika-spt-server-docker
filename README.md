@@ -115,9 +115,9 @@ services:
 ```
 
 ### When Fika server mod is updated for the same SPT version
-The image will hopefully be updated in a timely manner to the new Fika server mod version, and the image will be rebuilt with the same SPT version tag. Thus, all you will need to do is
-- Pull the image again
-- Restart the container
+This image will hopefully be updated in a timely manner to the new Fika server mod version, and the image will be rebuilt with the same SPT version tag. Thus, all you will need to do is
+- Pull the image again with `docker pull` or `docker-compose pull`
+- Bring up the container again with `docker run` or `docker-compose up`
 
 The container will validate your Fika server mod version matches the image's expected version, and if not it will
 - Back up the entire Fika server mod including configs to a `backups/fika` directory in the mounted server directory
@@ -129,9 +129,9 @@ The container will validate your Fika server mod version matches the image's exp
 
 ### When SPT updates
 A new image will be tagged with the new SPT version number, and thus you will need to
-- Update the image version tag
-- Pull the new image
-- Restart the container
+- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.10.0`
+- Pull the new image with `docker pull` or `docker-compose pull`
+- Bring up the container again with `docker run` or `docker-compose up`
 
 The image will validate that your SPT version in the serverfiles matches the image's expected SPT version, and if not it will
 - Back up the entire `user/` directory to a `backups/spt/` directory in the mounted server directory
