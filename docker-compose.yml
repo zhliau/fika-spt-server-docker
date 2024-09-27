@@ -2,7 +2,7 @@ services:
   fika-server:
     image: ghcr.io/zhliau/fika-spt-server-docker:latest
     ports:
-      - 9969:6969
+      - 6969:6969
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000

@@ -42,7 +42,6 @@ RUN apt update && apt install -y --no-install-recommends \
     unzip \
     vim \
     cron \
-    rsyslog \
     jq
 
 WORKDIR /opt/server
@@ -50,5 +49,4 @@ WORKDIR /opt/server
 COPY entrypoint.sh /usr/bin/entrypoint
 COPY backup.sh /usr/bin/backup
 COPY cron_backup_spt /etc/cron.d/cron_backup_spt
-RUN echo 'cron.*      /var/log/cron.log' >> /etc/syslog.conf
 ENTRYPOINT ["/usr/bin/entrypoint"]
