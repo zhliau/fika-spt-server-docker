@@ -28,11 +28,11 @@ The image has everything else you need to run an SPT Server, with Fika if desire
 
 
 # 🪄 Features
-- Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.9.8` for SPT `3.9.8`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
-- Reuse an existing installation of SPT! Just mount your existing SPT server folder
-- Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00
-- Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
-- (Optional) Auto updates SPT or Fika if we detect a version mismatch
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.9.8` for SPT `3.9.8`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
+- 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00
+- 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
+- ⬆️ Optionally auto updates SPT or Fika if we detect a version mismatch between container expected version and installed version
 
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
