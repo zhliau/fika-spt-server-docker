@@ -42,7 +42,7 @@ docker pull ghcr.io/zhliau/fika-spt-server-docker:latest
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
 # 🛫 Running
-## docker
+### docker
 ```
 docker run --name fika-server \
   -v /path/to/server/files:/opt/server \
@@ -50,10 +50,10 @@ docker run --name fika-server \
   ghcr.io/zhliau/fika-spt-server-docker:3.9.8 
 ```
 
-## docker-compose
-See the example docker-compose for a more complete definition
+### docker-compose
+See the example docker-compose for a more complete definition.
 
-Basic
+Minimal usage
 ```yaml
 services:
   fika-server:
@@ -156,15 +156,15 @@ None of these env vars are required, but they may be useful.
 
 
 # FAQ
-## Why are there files owned by root in my server files?
+### Why are there files owned by root in my server files?
 If you don't want the root user to run SPT server, make sure you provide a userID/groupID to the image to use to run the server.
 If none are provided, it defaults to uid 0 which is the root user.
 Running the server with root will mean anything the server writes out is created by the root user.
 
-## Can I use this without Fika?
-Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an SPT Server. Everything else including the autoupdate capability for SPT remains unchanged.
+### Can I use this without Fika?
+Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordinary SPT server container. Everything else including the autoupdate capability for SPT remains unchanged.
 
-## Development
+# Development
 ### Building
 ```
 # Server binary built using SPT Server 3.9.8 git tag, image tagged as fika-spt-server:1.0
