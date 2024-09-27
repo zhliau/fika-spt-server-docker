@@ -1,7 +1,7 @@
 # fika-spt-server-docker
 🐳 Clean and easy way to run SPT + Fika server in docker, with the flexibility to modify server files as you wish 🐳
 
-### ❓ Why?
+# 🤔 Why?
 Existing SPT Dockerfiles seem to leave everything, including building the image with the right sources, up to the user to manage.
 This image aims to provide a fully pre-packaged SPT Docker image with optional Fika mod that is as plug-and-play as possible. All you need is
 - A working docker installation
