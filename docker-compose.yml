@@ -2,7 +2,7 @@ services:
   fika-server:
     image: ghcr.io/zhliau/fika-spt-server-docker:latest
     ports:
-      - 6969:6969
+      - 9969:6969
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000
@@ -16,6 +16,8 @@ services:
       - AUTO_UPDATE_FIKA=true
       # If you don't want the container to change the file ownership of your server files, set this to false
       - TAKE_OWNERSHIP=true
+      # If you don't want to automatically back up profiles, set this to false
+      - ENABLE_PROFILE_BACKUPS=true
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./path/to/server/files:/opt/server

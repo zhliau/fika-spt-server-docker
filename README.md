@@ -30,6 +30,7 @@ The image has everything else you need to run an SPT Server, with Fika if desire
 # 🪄 Features
 - Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.9.8` for SPT `3.9.8`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - Reuse an existing installation of SPT! Just mount your existing SPT server folder
+- Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00
 - Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
 - (Optional) Auto updates SPT or Fika if we detect a version mismatch
 
@@ -142,15 +143,16 @@ The image will validate that your SPT version in the serverfiles matches the ima
 
 # Environment Variables
 None of these env vars are required, but they may be useful.
-| Env var            | Default | Description |
-| ------------------ | ------- | ----------- |
-| `UID`              | 1000    | The userID to use to run the server binary. This user is created in the container on runtime |
-| `GID`              | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created |
-| `INSTALL_FIKA`     | false   | Whether you want the container to automatically install/update fika servermod for you |
-| `FIKA_VERSION`     | v2.2.8  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
-| `AUTO_UPDATE_SPT`  | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
-| `AUTO_UPDATE_FIKA` | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
-| `TAKE_OWNERSHIP`   | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
+| Env var                   | Default | Description |
+| ------------------------- | ------- | ----------- |
+| `UID`                     | 1000    | The userID to use to run the server binary. This user is created in the container on runtime |
+| `GID`                     | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created |
+| `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you |
+| `FIKA_VERSION`            | v2.2.8  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
+| `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
+| `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
+| `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
+| `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
 
 
 # FAQ

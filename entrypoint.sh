@@ -26,6 +26,12 @@ auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
 
 take_ownership=${TAKE_OWNERSHIP:-true}
+enable_profile_backup=${ENABLE_PROFILE_BACKUP:-true}
+
+start_crond() {
+    echo "Enabling profile backups"
+    /etc/init.d/cron start
+}
 
 create_running_user() {
     echo "Checking running user/group: $uid:$gid"
@@ -167,6 +173,10 @@ if [[ "$install_fika" == "true" ]]; then
     else 
         echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
     fi
+fi
+
+if [[ "$enable_profile_backup" == "true" ]]; then
+    start_crond
 fi
 
 create_running_user
