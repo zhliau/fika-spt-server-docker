@@ -22,6 +22,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 - [FAQ](#faq)
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
   * [Can I use this without Fika?](#can-i-use-this-without-fika)
+  * [I am running this container on Linux, why does the server output show errors regarding Windows-like paths?](#i-am-running-this-container-on-linux-why-does-the-server-output-show-errors-regarding-windows-like-paths-eg-csnapshot)
 - [Development](#development)
   * [Building](#building)
 
