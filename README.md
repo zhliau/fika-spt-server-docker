@@ -1,5 +1,5 @@
 # fika-spt-server-docker
-🐳 Clean and easy way to run SPT + Fika server in docker, with the flexibility to modify server files as you wish 🐳
+🐳 Clean and easy way to run SPT + Fika server in docker, with auto-updates, profile backups, and the flexibility to modify server files as you wish 🐳
 
 # 🤔 Why?
 Existing SPT Dockerfiles seem to leave everything, including building the image with the right sources, up to the user to manage.
@@ -7,7 +7,7 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 - A working docker installation
 - A directory to contain your serverfiles, or an existing server directory.
 
-The image has everything else you need to run an SPT Server, with Fika if desired.
+That's it! The image has everything else you need to run an SPT Server, with Fika if desired.
 
 - [🪄 Features](#-features)
 - [🥡 Releases](#-releases)
@@ -163,6 +163,9 @@ Running the server with root will mean anything the server writes out is created
 
 ### Can I use this without Fika?
 Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordinary SPT server container. Everything else including the autoupdate capability for SPT remains unchanged.
+
+### I am running this container on Linux, why does the server output show errors regarding Windows-like paths? e.g. `C:\snapshot\...`.
+If you are reusing an existing SPT server that was previously running on Windows, you will need to delete the contents of your `/user/cache` folder.
 
 # Development
 ### Building
