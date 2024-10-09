@@ -23,6 +23,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
   * [Can I use this without Fika?](#can-i-use-this-without-fika)
   * [I am running this container on Linux, why does the server output show errors regarding Windows-like paths?](#i-am-running-this-container-on-linux-why-does-the-server-output-show-errors-regarding-windows-like-paths-eg-csnapshot)
+  * [Server starts but I cannot connect to it](#the-server-starts-but-i-cannot-connect-to-it-and-it-doesnt-seem-to-be-listening-on-port-6969)
 - [Development](#development)
   * [Building](#building)
 
@@ -168,7 +169,7 @@ Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordin
 ### I am running this container on Linux, why does the server output show errors regarding Windows-like paths? e.g. `C:\snapshot\...`.
 If you are reusing an existing SPT server that was previously running on Windows, you will need to delete the contents of your `/user/cache` folder.
 
-### The server starts, but I cannot seem to connect to it, and it doesn't seem to be listening on port 6969?
+### The server starts, but I cannot connect to it, and it doesn't seem to be listening on port 6969?
 Set the values of `ip` and `backendIp` in `SPT_Data/Server/configs/http.json` to `0.0.0.0`, to get the SPT server to listen on all interfaces. The file should look similar to this:
 ```
 {
