@@ -168,6 +168,20 @@ Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordin
 ### I am running this container on Linux, why does the server output show errors regarding Windows-like paths? e.g. `C:\snapshot\...`.
 If you are reusing an existing SPT server that was previously running on Windows, you will need to delete the contents of your `/user/cache` folder.
 
+### The server starts, but I cannot seem to connect to it, and it doesn't seem to be listening on port 6969?
+Set the values of `ip` and `backendIp` in `SPT_Data/Server/configs/http.json` to `0.0.0.0`, to get the SPT server to listen on all interfaces. The file should look similar to this:
+```
+{
+    "ip": "0.0.0.0",
+    "port": 6969,
+    "backendIp": "0.0.0.0",
+    "backendPort": 6969,
+    "webSocketPingDelayMs": 90000,
+    "logRequests": true,
+    "serverImagePathOverride": {}
+}
+```
+
 # Development
 ### Building
 ```
