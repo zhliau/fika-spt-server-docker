@@ -1,4 +1,4 @@
-FROM debian:bookworm as build
+FROM debian:bookworm AS build
 
 # SPT Server git tag or sha
 ARG SPT_SERVER_SHA=3.9.8
@@ -38,8 +38,10 @@ COPY --from=build /opt/build /opt/build
 
 RUN apt update && apt install -y --no-install-recommends \
     curl \
+    aria2 \
     ca-certificates \
     unzip \
+    7zip \
     vim \
     cron \
     jq
@@ -48,5 +50,6 @@ WORKDIR /opt/server
 
 COPY entrypoint.sh /usr/bin/entrypoint
 COPY backup.sh /usr/bin/backup
+COPY download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
 COPY cron_backup_spt /etc/cron.d/cron_backup_spt
 ENTRYPOINT ["/usr/bin/entrypoint"]
