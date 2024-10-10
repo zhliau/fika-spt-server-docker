@@ -181,7 +181,7 @@ A few other notes
 * If you want to redownload the same url, you will need to manually remove it from `mods_download/mod_urls_downloaded.txt` file.
 
 ### Mod updates
-When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwiriting any conflicting files in the installation. For simple mods that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
+When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwriting any conflicting files in the installation. For simple mods, that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
 
 # Environment Variables
 None of these env vars are required, but they may be useful.
