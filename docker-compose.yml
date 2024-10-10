@@ -18,6 +18,8 @@ services:
       - TAKE_OWNERSHIP=true
       # If you don't want to automatically back up profiles, set this to false
       - ENABLE_PROFILE_BACKUPS=true
+      # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
+      - LISTEN_ALL_NETWORKS=true
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./path/to/server/files:/opt/server
