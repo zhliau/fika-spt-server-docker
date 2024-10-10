@@ -155,6 +155,11 @@ try_update_spt() {
     exit 0
 }
 
+spt_listen_on_all_interfaces() {
+    # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
+    sed -i 's/127.0.0.1/0.0.0.0/g' $mounted_dir/SPT_Data/Server/configs/http.json
+}
+
 validate
 
 # If no server binary in this directory, copy our built files in here and run it once
@@ -164,6 +169,8 @@ if [[ ! -f "$mounted_dir/$spt_binary" ]]; then
 else
     echo "Found server files, skipping init"
 fi
+
+spt_listen_on_all_interfaces
 
 # Install fika if requested. Run each boot to support installing in existing serverfiles that don't have fika installed
 if [[ "$install_fika" == "true" ]]; then
