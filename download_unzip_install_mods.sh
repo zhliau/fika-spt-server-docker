@@ -53,8 +53,8 @@ make_download_dirs_and_files() {
     # Create the directory to hold the files & logs relataed to downloading mods
     mkdir -p $mod_download_dir
 
-    # Create the downloaded mods file it if it does not exist.
-    touch $mod_urls_downloaded_filepath
+    # Create the file for the user to specify URLs if they want.
+    touch $mod_urls_to_download_filepath
 
     # Create the tmp download and unzip directories.
     mkdir -p $tmp_download_dir
@@ -83,6 +83,9 @@ check_url_and_queue_to_download() {
 check_requested_urls() {
     echo "Checking for new urls in MOD_URLS_TO_DOWNLOAD environmet variable" >> $download_unzip_install_logs_filepath
     if [ ! -z "${MOD_URLS_TO_DOWNLOAD}" ]; then
+        # Create the downloaded mods file it if it does not exist. Does nothing if it already exists.
+        touch $mod_urls_downloaded_filepath
+        
         for url in $MOD_URLS_TO_DOWNLOAD; do
             check_url_and_queue_to_download $url
         done
@@ -92,6 +95,9 @@ check_requested_urls() {
 
     echo "Checking for new urls in $mod_urls_to_download_filename" >> $download_unzip_install_logs_filepath
     if [ -f "$mod_urls_to_download_filepath"  ] && [ ! -z "$(cat ${mod_urls_to_download_filepath})" ]; then
+        # Create the downloaded mods file it if it does not exist. Does nothing if it already exists.
+        touch $mod_urls_downloaded_filepath
+
         for url in `cat $mod_urls_to_download_filepath`; do
             check_url_and_queue_to_download $url
         done

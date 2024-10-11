@@ -170,7 +170,7 @@ This is disabled by default so first the `INSTALL_OTHER_MODS` environment variab
 There are two methods to specify the URLs: `mods_download/mod_urls_to_download.txt` and `MOD_URLS_TO_DOWNLOAD` environment variable. You can use either or both of these methods.
 
 #### mod_urls_to_download.txt
-Add the URLs to `mods_download/mod_urls_to_download.txt` (create the file if it's not already there). Just make sure each URL is separated by a new line or space (or any mix of those if you're feeling chaotic neutral). Here's an example of what it could look like:
+Add the URLs to `mods_download/mod_urls_to_download.txt`. The file will be created automatically on the first run if the `INSTALL_OTHER_MODS` variable is set to `true`. Just make sure each URL is separated by a new line or space (or any mix of those if you're feeling chaotic neutral). Here's an example of what it could look like:
 
 ```
 https://github.com/project-fika/Fika-Plugin/releases/download/v0.9.9015.15435/Fika.Release.0.9.9015.15435.zip
