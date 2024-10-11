@@ -165,9 +165,25 @@ When the container starts, before it runs the SPT server executable, this will d
 It also keeps track of each URL downloaded in the `mods_download/mod_urls_downloaded.txt` file so it does not re-download one that has already been downloaded unless you manually remove it from or delete that file entirely.
 
 ### How to use it
-This is disabled by default so first the `INSTALL_OTHER_MODS` variable needs to be set to `true`. There are two methods to specify the URLs (you can use either or both of these methods):
-- Add the URLs, one URL per line, to `mods_download/mod_urls_to_download.txt` (create the file if it's not already there).
-- Set the environment variable `MOD_URLS_TO_DOWNLOAD` to a space separated list of the URLs you want it to download.
+This is disabled by default so first the `INSTALL_OTHER_MODS` environment variable needs to be set to `true`.
+
+There are two methods to specify the URLs: `mods_download/mod_urls_to_download.txt` and `MOD_URLS_TO_DOWNLOAD` environment variable. You can use either or both of these methods.
+
+#### mod_urls_to_download.txt
+Add the URLs to `mods_download/mod_urls_to_download.txt` (create the file if it's not already there). Just make sure each URL is separated by a new line or space (or any mix of those if you're feeling chaotic neutral). Here's an example of what it could look like:
+
+```
+https://github.com/project-fika/Fika-Plugin/releases/download/v0.9.9015.15435/Fika.Release.0.9.9015.15435.zip
+https://github.com/Solarint/SAIN/releases/download/v3.1.0-Release/SAIN-3.1.0-Release.7z https://github.com/DrakiaXYZ/SPT-BigBrain/releases/download/1.0.1/DrakiaXYZ-BigBrain-1.0.1.7z
+https://github.com/DrakiaXYZ/SPT-Waypoints/releases/download/1.5.1/DrakiaXYZ-Waypoints-1.5.1.7z
+https://github.com/Nympfonic/UnityToolkit/releases/download/v1.0.1/UnityToolkit-1.0.1.7z
+https://github.com/Skwizzy/SPT-LootingBots/releases/download/v1.3.5-spt-3.9.0/Skwizzy-LootingBots-1.3.5.zip
+https://github.com/dwesterwick/SPTQuestingBots/releases/download/0.7.0/DanW-SPTQuestingBots.zip https://github.com/mpstark/SPT-DynamicMaps/releases/download/0.3.4/DynamicMaps-0.3.4-b6d8bf85.zip
+
+```
+#### MOD_URLS_TO_DOWNLOAD Environment Variable
+
+Just Set the environment variable `MOD_URLS_TO_DOWNLOAD` to a list of the URLs you want it to download. I don't think you can use new lines in environment variables, so just stick to spaces, but otherwise it would be the same as the `mod_urls_to_download.txt` example above.
 
 > [!WARNING] If you use both methods, it may conflict if you download multiple versions of the same mod at the same time.
 
@@ -181,7 +197,7 @@ A few other notes
 * If you want to redownload the same url, you will need to manually remove it from `mods_download/mod_urls_downloaded.txt` file.
 
 ### Mod updates
-When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwriting any conflicting files in the installation. For simple mods, that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
+When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwiriting any conflicting files in the installation. For simple mods that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
 
 # Environment Variables
 None of these env vars are required, but they may be useful.

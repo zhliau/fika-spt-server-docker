@@ -92,9 +92,9 @@ check_requested_urls() {
 
     echo "Checking for new urls in $mod_urls_to_download_filename" >> $download_unzip_install_logs_filepath
     if [ -f "$mod_urls_to_download_filepath"  ] && [ ! -z "$(cat ${mod_urls_to_download_filepath})" ]; then
-        while read url; do
+        for url in `cat $mod_urls_to_download_filepath`; do
             check_url_and_queue_to_download $url
-        done <$mod_urls_to_download_filepath
+        done
     else
         echo "$mod_urls_to_download_filename does not exist or is empty" >> $download_unzip_install_logs_filepath
     fi
