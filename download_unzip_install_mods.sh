@@ -102,7 +102,7 @@ check_requested_urls() {
             check_url_and_queue_to_download $url
         done
     else
-        echo "$mod_urls_to_download_filename does not exist or is empty" >> $download_unzip_install_logs_filepath
+        echo "  $mod_urls_to_download_filename does not exist or is empty" >> $download_unzip_install_logs_filepath
     fi
 }
 
@@ -123,7 +123,10 @@ download_new_urls() {
         # Once all downloads are complete, append the downloaded files list to the master list for .
         cat $new_urls_to_download_filepath >> $mod_urls_downloaded_filepath
     else
-        echo "  No new urls queued up. Nothing to download" >> $download_unzip_install_logs_filepath
+        # Local variable to send the same message to stdout with a double space indentation and to the logs without
+        local message="No new urls. Nothing to download"
+        echo "  $message"
+        echo $message >> $download_unzip_install_logs_filepath
     fi
 }
 
@@ -264,10 +267,12 @@ extract_downloads_and_install_mods() {
         move_remaining_downloaded_files
         cleanup_downloaded_and_extracted_files
 
-        echo "  Mod download and installation complete" >> $download_unzip_install_logs_filepath
-        echo "  Mod download and installation complete. For complete logs see $download_unzip_install_logs_relative_filepath"
+        # Local variable to send the same message to stdout with a double space indentation and about where to find these logs and to the logs without
+        local message="Mod download and installation complete"
+        echo "  $message. For complete logs see $download_unzip_install_logs_relative_filepath"
+        echo $message >> $download_unzip_install_logs_filepath
     else
-        echo "  No files downloaded. No mods to install" | tee -a $download_unzip_install_logs_filepath
+        echo "No files downloaded. No mods to install" >> $download_unzip_install_logs_filepath
     fi
     rm -rf $tmp_download_dir 2> /dev/null
 }
