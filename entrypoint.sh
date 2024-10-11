@@ -13,6 +13,7 @@ spt_version=3.9.8
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/Server/configs/core.json
+enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 fika_version=${FIKA_VERSION:-v2.2.8}
 install_fika=${INSTALL_FIKA:-false}
@@ -155,6 +156,12 @@ try_update_spt() {
     exit 0
 }
 
+spt_listen_on_all_networks() {
+    # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
+    http_json=$mounted_dir/SPT_Data/Server/configs/http.json
+    modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
+}
+
 validate
 
 # If no server binary in this directory, copy our built files in here and run it once
@@ -163,6 +170,11 @@ if [[ ! -f "$mounted_dir/$spt_binary" ]]; then
     install_spt
 else
     echo "Found server files, skipping init"
+fi
+
+# Install listen on all interfaces is requested.
+if [[ "$enable_spt_listen_on_all_networks" == "true" ]]; then
+    spt_listen_on_all_networks
 fi
 
 # Install fika if requested. Run each boot to support installing in existing serverfiles that don't have fika installed
