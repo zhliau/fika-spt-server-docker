@@ -158,7 +158,8 @@ try_update_spt() {
 
 spt_listen_on_all_networks() {
     # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
-    sed -i 's/127.0.0.1/0.0.0.0/g' $mounted_dir/SPT_Data/Server/configs/http.json
+    http_json=$mounted_dir/SPT_Data/Server/configs/http.json
+    modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
 }
 
 validate
