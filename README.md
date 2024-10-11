@@ -171,7 +171,9 @@ Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordin
 If you are reusing an existing SPT server that was previously running on Windows, you will need to delete the contents of your `/user/cache` folder.
 
 ### The server starts, but I cannot connect to it, and it doesn't seem to be listening on port 6969?
-Set the values of `ip` and `backendIp` in `SPT_Data/Server/configs/http.json` to `0.0.0.0`, to get the SPT server to listen on all interfaces. The file should look similar to this:
+Set the environment variable `LISTEN_ALL_NETWORKS` to `true` and restart the container.
+
+This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/http.json` to `0.0.0.0`, which tells the SPT server to listen on all network interfaces. If you want to do this manually, the file should look similar to this:
 ```
 {
     "ip": "0.0.0.0",
