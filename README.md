@@ -189,7 +189,7 @@ Just Set the environment variable `MOD_URLS_TO_DOWNLOAD` to a list of the URLs y
 
 The URLs should point to a direct file download of a `.zip`, `.7z`, `.tar/.tar.gz`, or `.dll` file. It is assumed that compressed downloads (`.zip`, `.7z`, and `.tar/.tar.gz`) are already organized into the `BepInEx/plugins` and/or `user/mods` directory(ies). Most mod developers do this but not all of them. If a mod is not correctly organized then it will still be downloaded and extracted but the files will be moved to the `mods_download/remains` directory for you to handle manually.
 
-If a mod requires any post-installation configuration, you will still need to to this manually.
+If a mod requires any post-installation configuration, you will still need to do this manually.
 
 A few other notes
 * You can add or change the URLs whenever you want. Any new URLs will be downloaded and installed the next time the container is restarted.
