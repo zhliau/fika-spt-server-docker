@@ -29,6 +29,8 @@ auto_update_fika=${AUTO_UPDATE_FIKA:-false}
 take_ownership=${TAKE_OWNERSHIP:-true}
 enable_profile_backup=${ENABLE_PROFILE_BACKUP:-true}
 
+install_other_mods=${INSTALL_OTHER_MODS:-false}
+
 start_crond() {
     echo "Enabling profile backups"
     /etc/init.d/cron start
@@ -84,7 +86,7 @@ change_owner() {
     fi
 }
 
-#####*##
+########
 # Fika #
 ########
 install_fika_mod() {
@@ -156,6 +158,20 @@ try_update_spt() {
     exit 0
 }
 
+##############
+# Other Mods #
+##############
+
+install_requested_mods() {
+    # Run the download & install mods script
+    echo "Downloading and installing other mods"
+    /usr/bin/download_unzip_install_mods $mounted_dir
+}
+
+##############
+# Run it All #
+##############
+
 spt_listen_on_all_networks() {
     # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
     http_json=$mounted_dir/SPT_Data/Server/configs/http.json
@@ -185,6 +201,10 @@ if [[ "$install_fika" == "true" ]]; then
     else 
         echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
     fi
+fi
+
+if [[ "$install_other_mods" == "true" ]]; then
+    install_requested_mods
 fi
 
 if [[ "$enable_profile_backup" == "true" ]]; then

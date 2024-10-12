@@ -18,6 +18,10 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
   * [Updating SPT/Fika versions](#updating-sptfika-versions)
     + [When Fika server mod is updated for the same SPT version](#when-fika-server-mod-is-updated-for-the-same-spt-version)
     + [When SPT updates](#when-spt-updates)
+  * [Automatically download & install additional mods](#automatically-download--install-additional-mods)
+    * [What it does](#what-it-does)
+    * [How to use it](#how-to-use-it)
+    * [Mod updates](#mod-updates)
 - [Environment Variables](#environment-variables)
 - [FAQ](#faq)
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
@@ -35,6 +39,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
 - ⬆️ Optionally auto updates SPT or Fika if we detect a version mismatch between container expected version and installed version
+- ⬇️ Optionally auto download and install additional mods
 
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
@@ -143,6 +148,57 @@ The image will validate that your SPT version in the serverfiles matches the ima
 > The user directory in your existing SPT server files is left untouched! Please make sure that you validate that the SPT version you are running works with your installed mods and profiles!
 > You may want to start by removing all mods and validating them one by one
 
+## Automatically download & install additional mods
+Instead of manually downloading and installing the other mods you want, you can have the server do it for you at boot!
+
+> [!WARNING] Unlike with SPT and FIKA install features above, this feature does not check any versions, configs, etc. before overwriting. It basically just an automated system to download, extract, and then drag & drop mods into place, so use at your own risk.
+
+### What it does
+When the container starts, before it runs the SPT server executable, this will download the provided URLs, extract all the supported file types, and then do the following:
+- Move the `BepInEx/plugins` and `user/mods` to their appropriate locations (effecitvely "installing" them, just like you'd do drag & drop in a local SPT install)
+- Move any bare .dll files to BepInEx/plugins
+- Move any .txt, .md. and .exe files to the root of the mounted directory.
+  - Some mods are or come with .exe, like ModSync or SVM (ServerValueModifier)
+  - .txt and .md are usually README's or licenses.
+- Move any remaining downloaded/unzipped files to the `mods_download/remains` directory.
+
+It also keeps track of each URL downloaded in the `mods_download/mod_urls_downloaded.txt` file so it does not re-download one that has already been downloaded unless you manually remove it from or delete that file entirely.
+
+### How to use it
+This is disabled by default so first the `INSTALL_OTHER_MODS` environment variable needs to be set to `true`.
+
+There are two methods to specify the URLs: `mods_download/mod_urls_to_download.txt` and `MOD_URLS_TO_DOWNLOAD` environment variable. You can use either or both of these methods.
+
+#### mod_urls_to_download.txt
+Add the URLs to `mods_download/mod_urls_to_download.txt`. The file will be created automatically on the first run if the `INSTALL_OTHER_MODS` variable is set to `true`. Just make sure each URL is separated by a new line or space (or any mix of those if you're feeling chaotic neutral). Here's an example of what it could look like:
+
+```
+https://github.com/project-fika/Fika-Plugin/releases/download/v0.9.9015.15435/Fika.Release.0.9.9015.15435.zip
+https://github.com/Solarint/SAIN/releases/download/v3.1.0-Release/SAIN-3.1.0-Release.7z https://github.com/DrakiaXYZ/SPT-BigBrain/releases/download/1.0.1/DrakiaXYZ-BigBrain-1.0.1.7z
+https://github.com/DrakiaXYZ/SPT-Waypoints/releases/download/1.5.1/DrakiaXYZ-Waypoints-1.5.1.7z
+https://github.com/Nympfonic/UnityToolkit/releases/download/v1.0.1/UnityToolkit-1.0.1.7z
+https://github.com/Skwizzy/SPT-LootingBots/releases/download/v1.3.5-spt-3.9.0/Skwizzy-LootingBots-1.3.5.zip
+https://github.com/dwesterwick/SPTQuestingBots/releases/download/0.7.0/DanW-SPTQuestingBots.zip https://github.com/mpstark/SPT-DynamicMaps/releases/download/0.3.4/DynamicMaps-0.3.4-b6d8bf85.zip
+
+```
+#### MOD_URLS_TO_DOWNLOAD Environment Variable
+
+Just Set the environment variable `MOD_URLS_TO_DOWNLOAD` to a list of the URLs you want it to download. I don't think you can use new lines in environment variables, so just stick to spaces, but otherwise it would be the same as the `mod_urls_to_download.txt` example above.
+
+> [!WARNING] If you use both methods, it may conflict if you download multiple versions of the same mod at the same time.
+
+The URLs should point to a direct file download of a `.zip`, `.7z`, `.tar/.tar.gz`, or `.dll` file. It is assumed that compressed downloads (`.zip`, `.7z`, and `.tar/.tar.gz`) are already organized into the `BepInEx/plugins` and/or `user/mods` directory(ies). Most mod developers do this but not all of them. If a mod is not correctly organized then it will still be downloaded and extracted but the files will be moved to the `mods_download/remains` directory for you to handle manually.
+
+If a mod requires any post-installation configuration, you will still need to do this manually.
+
+A few other notes
+* You can add or change the URLs whenever you want. Any new URLs will be downloaded and installed the next time the container is restarted.
+* Removing a URL from the specified URLs does not remove the downloaded mod/files, it only stops it from checking that URL again.
+* If you want to redownload the same url, you will need to manually remove it from `mods_download/mod_urls_downloaded.txt` file.
+
+### Mod updates
+When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwriting any conflicting files in the installation. For simple mods that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
+
 # Environment Variables
 None of these env vars are required, but they may be useful.
 | Env var                   | Default | Description |
@@ -150,6 +206,8 @@ None of these env vars are required, but they may be useful.
 | `UID`                     | 1000    | The userID to use to run the server binary. This user is created in the container on runtime |
 | `GID`                     | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created |
 | `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you |
+| `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified  |
+| `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true |
 | `FIKA_VERSION`            | v2.2.8  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
 | `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
