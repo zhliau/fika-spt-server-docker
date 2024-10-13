@@ -52,6 +52,8 @@ Check the pane on the right for the different version tags available, if you don
 ### docker
 ```
 docker run --name fika-server \
+  -e INSTALL_FIKA=true \
+  -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
   ghcr.io/zhliau/fika-spt-server-docker:3.9.8 
@@ -65,6 +67,10 @@ Minimal usage
 services:
   fika-server:
     image: ghcr.io/zhliau/fika-spt-server-docker:latest
+    environment:
+      - INSTALL_FIKA=true
+      # This will automatically set SPT server's configs to work in a containerized environment
+      - LISTEN_ALL_NETWORKS=true
     ports:
       - 6969:6969
     volumes:
@@ -81,6 +87,7 @@ services:
     environment:
       # Provide the uid/gid of the user to run the server, or it will default to 0 (root)
       # You can get your host user's uid/gid by running the id command
+      # ...
       - UID=1000
       - GID=1000
 ```
