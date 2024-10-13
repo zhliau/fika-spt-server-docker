@@ -158,7 +158,8 @@ The image will validate that your SPT version in the serverfiles matches the ima
 ## Automatically download & install additional mods
 Instead of manually downloading and installing the other mods you want, you can have the server do it for you at boot!
 
-> [!WARNING] Unlike with SPT and FIKA install features above, this feature does not check any versions, configs, etc. before overwriting. It basically just an automated system to download, extract, and then drag & drop mods into place, so use at your own risk.
+> [!WARNING]
+> Unlike with SPT and FIKA install features above, this feature does not check any versions, configs, etc. before overwriting. It basically just an automated system to download, extract, and then drag & drop mods into place, so use at your own risk.
 
 ### What it does
 When the container starts, before it runs the SPT server executable, this will download the provided URLs, extract all the supported file types, and then do the following:
