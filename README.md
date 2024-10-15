@@ -193,7 +193,8 @@ https://github.com/dwesterwick/SPTQuestingBots/releases/download/0.7.0/DanW-SPTQ
 
 Just Set the environment variable `MOD_URLS_TO_DOWNLOAD` to a list of the URLs you want it to download. I don't think you can use new lines in environment variables, so just stick to spaces, but otherwise it would be the same as the `mod_urls_to_download.txt` example above.
 
-> [!WARNING] If you use both methods, it may conflict if you download multiple versions of the same mod at the same time.
+> [!WARNING]
+> If you use both methods, it may conflict if you download multiple versions of the same mod at the same time.
 
 The URLs should point to a direct file download of a `.zip`, `.7z`, `.tar/.tar.gz`, or `.dll` file. It is assumed that compressed downloads (`.zip`, `.7z`, and `.tar/.tar.gz`) are already organized into the `BepInEx/plugins` and/or `user/mods` directory(ies). Most mod developers do this but not all of them. If a mod is not correctly organized then it will still be downloaded and extracted but the files will be moved to the `mods_download/remains` directory for you to handle manually.
 
