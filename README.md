@@ -22,13 +22,13 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
     * [What it does](#what-it-does)
     * [How to use it](#how-to-use-it)
     * [Mod updates](#mod-updates)
-- [Environment Variables](#environment-variables)
-- [FAQ](#faq)
+- [🌐 Environment Variables](#-environment-variables)
+- [💬 FAQ](#-faq)
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
   * [Can I use this without Fika?](#can-i-use-this-without-fika)
   * [I am running this container on Linux, why does the server output show errors regarding Windows-like paths?](#i-am-running-this-container-on-linux-why-does-the-server-output-show-errors-regarding-windows-like-paths-eg-csnapshot)
   * [Server starts but I cannot connect to it](#the-server-starts-but-i-cannot-connect-to-it-and-it-doesnt-seem-to-be-listening-on-port-6969)
-- [Development](#development)
+- [💻 Development](#-development)
   * [Building](#building)
 
 
@@ -208,7 +208,7 @@ A few other notes
 ### Mod updates
 When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwriting any conflicting files in the installation. For simple mods that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
 
-# Environment Variables
+# 🌐 Environment Variables
 None of these env vars are required, but they may be useful.
 | Env var                   | Default | Description |
 | ------------------------- | ------- | ----------- |
@@ -225,7 +225,7 @@ None of these env vars are required, but they may be useful.
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
 
 
-# FAQ
+# 💬 FAQ
 ### Why are there files owned by root in my server files?
 If you don't want the root user to run SPT server, make sure you provide a userID/groupID to the image to use to run the server.
 If none are provided, it defaults to uid 0 which is the root user.
@@ -253,7 +253,7 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 }
 ```
 
-# Development
+# 💻 Development
 ### Building
 ```
 # Server binary built using SPT Server 3.9.8 git tag, image tagged as fika-spt-server:1.0
