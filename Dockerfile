@@ -49,7 +49,7 @@ RUN apt update && apt install -y --no-install-recommends \
 WORKDIR /opt/server
 
 COPY entrypoint.sh /usr/bin/entrypoint
-COPY backup.sh /usr/bin/backup
-COPY download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
-COPY cron_backup_spt /etc/cron.d/cron_backup_spt
+COPY scripts/backup.sh /usr/bin/backup
+COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
+COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
 ENTRYPOINT ["/usr/bin/entrypoint"]
