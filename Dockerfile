@@ -1,7 +1,7 @@
 FROM debian:bookworm AS build
 
 # SPT Server git tag or sha
-ARG SPT_SERVER_SHA=3.10.0-DEV
+ARG SPT_SERVER_SHA=3.10.0
 
 USER root
 RUN apt update && apt install -y --no-install-recommends \
