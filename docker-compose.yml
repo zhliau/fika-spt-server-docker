@@ -1,9 +1,8 @@
 services:
   fika-server:
-    #image: ghcr.io/zhliau/fika-spt-server-docker:latest
-    image: fika-spt-server-docker:3.10
+    image: ghcr.io/zhliau/fika-spt-server-docker:latest
     ports:
-      - 7969:6969
+      - 6969:6969
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000
@@ -23,4 +22,4 @@ services:
       - LISTEN_ALL_NETWORKS=true
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
-      - ./test:/opt/server
+      - ./server:/opt/server
