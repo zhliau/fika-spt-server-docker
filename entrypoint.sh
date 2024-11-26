@@ -125,6 +125,8 @@ try_update_fika() {
 # SPT #
 #######
 install_spt() {
+    # Remove the SPT_Data server, since databases tend to be different between versions
+    rm -rf $mounted_dir/SPT_Data
     cp -r $build_dir/* $mounted_dir
     make_and_own_spt_dirs
 }
@@ -152,9 +154,14 @@ try_update_spt() {
     echo "  ==============="
     echo "  === WARNING ==="
     echo "  ==============="
-    echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been left untouched in the server dir."
+    echo ""
+    echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been LEFT UNTOUCHED in the server dir."
     echo "  Please verify your existing mods and profile work with this new SPT version! You may want to delete the mods directory and start from scratch"
     echo "  Restart this container to bring the server back up"
+    echo ""
+    echo "  ==============="
+    echo "  === WARNING ==="
+    echo "  ==============="
     exit 0
 }
 
