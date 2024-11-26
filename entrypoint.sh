@@ -9,13 +9,13 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=3.9.8
+spt_version=3.10.0
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/Server/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
-fika_version=${FIKA_VERSION:-v2.2.8}
+fika_version=${FIKA_VERSION:-v2.3.0}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
@@ -125,6 +125,8 @@ try_update_fika() {
 # SPT #
 #######
 install_spt() {
+    # Remove the SPT_Data server, since databases tend to be different between versions
+    rm -rf $mounted_dir/SPT_Data
     cp -r $build_dir/* $mounted_dir
     make_and_own_spt_dirs
 }
@@ -152,9 +154,14 @@ try_update_spt() {
     echo "  ==============="
     echo "  === WARNING ==="
     echo "  ==============="
-    echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been left untouched in the server dir."
+    echo ""
+    echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been LEFT UNTOUCHED in the server dir."
     echo "  Please verify your existing mods and profile work with this new SPT version! You may want to delete the mods directory and start from scratch"
     echo "  Restart this container to bring the server back up"
+    echo ""
+    echo "  ==============="
+    echo "  === WARNING ==="
+    echo "  ==============="
     exit 0
 }
 
