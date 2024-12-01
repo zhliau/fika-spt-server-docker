@@ -1,7 +1,7 @@
 FROM debian:bookworm AS build
 
 # SPT Server git tag or sha
-ARG SPT_SERVER_SHA=3.10.0
+ARG SPT_SERVER_SHA=3.10.1
 
 USER root
 RUN apt update && apt install -y --no-install-recommends \
@@ -47,6 +47,9 @@ RUN apt update && apt install -y --no-install-recommends \
     jq
 
 WORKDIR /opt/server
+
+ARG SPT_SERVER_SHA=3.10.1
+ENV SPT_VERSION=$SPT_SERVER_SHA
 
 COPY entrypoint.sh /usr/bin/entrypoint
 COPY scripts/backup.sh /usr/bin/backup
