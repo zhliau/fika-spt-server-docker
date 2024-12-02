@@ -268,8 +268,8 @@ You can similarly override the Fika version by setting the `FIKA_VERSION` build 
 
 The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION_SLUG>/fika-server.zip`
 
-```
+```bash
 # Server binary built using SPT Server 3.10.1 git tag, image tagged as fika-spt-server:latest
 # Downloads and validates Fika version v2.3.0
-$ VERSION=latest FIKA_VERSION=v2.3.0 SPT_SHA=3.10.1 ./build
+VERSION=latest FIKA_VERSION=v2.3.0 SPT_SHA=3.10.1 ./build
 ```
