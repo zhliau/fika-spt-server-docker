@@ -20,6 +20,15 @@ services:
       - ENABLE_PROFILE_BACKUPS=true
       # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
       - LISTEN_ALL_NETWORKS=true
+      - INSTALL_OTHER_MODS=true
+      - MOD_URLS_TO_DOWNLOAD=
+        https://github.com/c-orter/ModSync/releases/download/v0.10.0/Corter-ModSync-v0.10.0.zip
+        https://github.com/project-fika/Fika-Plugin/releases/download/v1.0.3.0/Fika.Release.1.0.3.0.zip
+        https://github.com/Nympfonic/UnityToolkit/releases/download/v1.0.1/UnityToolkit-1.0.1.7z
+        https://github.com/DrakiaXYZ/SPT-BigBrain/releases/download/1.2.0/DrakiaXYZ-BigBrain-1.2.0.7z
+        https://github.com/DrakiaXYZ/SPT-Waypoints/releases/download/1.6.0/DrakiaXYZ-Waypoints-1.6.0.7z
+        https://github.com/Solarint/SAIN/releases/download/v3.2.0-Release/SAIN-3.2.0-Release.7z
+        https://github.com/No3371/SPT_ThatsLit/releases/download/1.3100.0/ThatsLit_1.3100.0.zip
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./server:/opt/server
