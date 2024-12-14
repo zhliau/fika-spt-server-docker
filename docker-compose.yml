@@ -2,7 +2,8 @@ services:
   fika-server:
     image: ghcr.io/zhliau/fika-spt-server-docker:latest
     ports:
-      - 6969:6969
+      - 7072:7072
+      - 6790:6790/udp
     environment:
       # Provide the uid/gid of the user, or it will default to 0 (root)
       - UID=1000
@@ -11,9 +12,9 @@ services:
       # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
       - INSTALL_FIKA=true
       # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
-      - AUTO_UPDATE_SPT=true
+      - AUTO_UPDATE_SPT=false
       # If you want the container to update Fika automatically if it detects the Fika server version does not match expected version, set this to true
-      - AUTO_UPDATE_FIKA=true
+      - AUTO_UPDATE_FIKA=false
       # If you don't want the container to change the file ownership of your server files, set this to false
       - TAKE_OWNERSHIP=true
       # If you don't want to automatically back up profiles, set this to false
@@ -23,12 +24,14 @@ services:
       - INSTALL_OTHER_MODS=true
       - MOD_URLS_TO_DOWNLOAD=
         https://github.com/c-orter/ModSync/releases/download/v0.10.0/Corter-ModSync-v0.10.0.zip
-        https://github.com/project-fika/Fika-Plugin/releases/download/v1.0.3.0/Fika.Release.1.0.3.0.zip
+        https://github.com/project-fika/Fika-Plugin/releases/download/v1.0.4.0/Fika.Release.1.0.4.0.zip
         https://github.com/Nympfonic/UnityToolkit/releases/download/v1.0.1/UnityToolkit-1.0.1.7z
         https://github.com/DrakiaXYZ/SPT-BigBrain/releases/download/1.2.0/DrakiaXYZ-BigBrain-1.2.0.7z
         https://github.com/DrakiaXYZ/SPT-Waypoints/releases/download/1.6.0/DrakiaXYZ-Waypoints-1.6.0.7z
-        https://github.com/Solarint/SAIN/releases/download/v3.2.0-Release/SAIN-3.2.0-Release.7z
+        https://github.com/Solarint/SAIN/releases/download/v3.2.1-RC2/SAIN-3.2.1-RC2.7z
         https://github.com/No3371/SPT_ThatsLit/releases/download/1.3100.0/ThatsLit_1.3100.0.zip
+        https://github.com/Andrewgdewar/AlgorithmicLevelProgression/releases/download/5.4.1/AlgorithmicLevelProgression-5.4.1.zip
+        https://github.com/ArchangelWTF/SPT-LootingBots/releases/download/1.4.0-rc2/Skwizzy-LootingBots-1.4.0-rc2.zip
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./server:/opt/server
