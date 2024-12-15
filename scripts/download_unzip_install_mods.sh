@@ -210,6 +210,10 @@ move_extracted_files() {
     mkdir -p $plugins_mod_dir
     mkdir -p $user_mod_dir
 
+    # Copy any extracted loose dll files, move them to BepInEx/plugins.
+    cp $tmp_extracted_dir/*.dll $plugins_mod_dir 2> /dev/null
+    rm $tmp_extracted_dir/*.dll 2> /dev/null
+
     # Copy the BepInEx directory to where it needs to go. Some mods have the p in plugins capitalized
     cp -rf $tmp_extracted_dir/BepInEx/plugins/* $plugins_mod_dir 2> /dev/null
     cp -rf $tmp_extracted_dir/BepInEx/Plugins/* $plugins_mod_dir 2> /dev/null
@@ -231,7 +235,7 @@ move_extracted_files() {
 }
 
 move_remaining_downloaded_files() {
-    # If there are any loose dll files, move them to BepInEx/plugins.
+    # Copy any downloaded loose dll files, move them to BepInEx/plugins.
     cp $tmp_downloaded_dir/*.dll $plugins_mod_dir 2> /dev/null
     rm $tmp_downloaded_dir/*.dll 2> /dev/null
 }
