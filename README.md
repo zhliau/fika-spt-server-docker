@@ -37,7 +37,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 - 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.10.2` for SPT `3.10.2`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
-- 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container take ownership to ease permissions issues.
+- 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
 - ⬆️ Optionally auto updates SPT or Fika if we detect a version mismatch between container expected version and installed version
 - ⬇️ Optionally auto download and install additional mods
 
@@ -226,6 +226,7 @@ None of these env vars are required, but they may be useful.
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
 | `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
 | `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
+| `CHANGE_PERMISSIONS`      | true    | If this is set to false, the container will not change file permissions of the server files. Make sure the running user has permissions to access these files |
 | `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
 

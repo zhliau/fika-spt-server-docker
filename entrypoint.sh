@@ -27,6 +27,7 @@ auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
 
 take_ownership=${TAKE_OWNERSHIP:-true}
+change_permissions=${CHANGE_PERMISSIONS:-true}
 enable_profile_backup=${ENABLE_PROFILE_BACKUP:-true}
 
 install_other_mods=${INSTALL_OTHER_MODS:-false}
@@ -77,12 +78,22 @@ make_and_own_spt_dirs() {
     mkdir -p $mounted_dir/user/mods
     mkdir -p $mounted_dir/user/profiles
     change_owner
+    set_permissions
 }
 
 change_owner() {
     if [[ "$take_ownership" == "true" ]]; then
         echo "Changing owner of serverfiles to $uid:$gid"
         chown -R ${uid}:${gid} $mounted_dir
+    fi
+}
+
+set_permissions() {
+    if [[ "$change_permissions" == "true" ]]; then
+        echo "Changing permissions of server files to user+rwx, group+rwx, others+rx"
+        # owner(u), (g)roup, (o)ther
+        # (r)ead, (w)rite, e(x)ecute
+        chmod -R u+rwx,g+rwx,o+rx $mounted_dir
     fi
 }
 
@@ -222,5 +233,6 @@ create_running_user
 
 # Own mounted files as running user
 change_owner
+set_permissions
 
 su - $(id -nu $uid) -c "cd $mounted_dir && ./SPT.Server.exe"
