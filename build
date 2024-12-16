@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version_tag=${VERSION:-latest}
-spt_sha=${SPT_SHA:-3.10.2}
+spt_sha=${SPT_SHA:-3.10.3}
 fika_version=${FIKA_VERSION:-v2.3.2}
 
 docker build . --build-arg SPT_SERVER_SHA=$spt_sha --build-arg FIKA_VERSION=$fika_version -t fika-spt-server-docker:$version_tag $@
