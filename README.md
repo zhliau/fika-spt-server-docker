@@ -56,7 +56,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:3.10.4
+  ghcr.io/zhliau/fika-spt-server-docker:3.10.5
 ```
 
 ### docker-compose
@@ -262,7 +262,7 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 # 💻 Development
 ### Building
 You can overwrite the expected SPT version by setting the `SPT_SHA` build arg. This must correspond with a git ref (tag or branch) in the
-SPT Server github repo. This version must be a release [semver](https://semver.org/) value, and thus pre-release refs like `3.10.4-dev` will not work.
+SPT Server github repo. This version must be a release [semver](https://semver.org/) value, and thus pre-release refs like `3.10.5-dev` will not work.
 This is because the value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot.
 
 You can similarly override the Fika version by setting the `FIKA_VERSION` build arg. Make sure this matches the Fika version slug in the Fika Server download URL.
