@@ -271,7 +271,7 @@ The URL will look like `https://github.com/project-fika/Fika-Server/releases/dow
 
 ```bash
 # Server binary built using SPT Server 3.10.5 git tag, image tagged as fika-spt-server:latest
-# Downloads and validates Fika version v2.3.1
+# Downloads and validates Fika version v2.3.6
 
 VERSION=latest FIKA_VERSION=v2.3.6 SPT_SHA=3.10.5 ./build
 ```
