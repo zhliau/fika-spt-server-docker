@@ -22,6 +22,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
     * [What it does](#what-it-does)
     * [How to use it](#how-to-use-it)
     * [Mod updates](#mod-updates)
+  * [Time Zone Support](#time-zone)
 - [🌐 Environment Variables](#-environment-variables)
 - [💬 FAQ](#-faq)
   * [Why are there files owned by root in my server files?](#why-are-there-files-owned-by-root-in-my-server-files)
@@ -213,6 +214,23 @@ A few other notes
 ### Mod updates
 When a mod is updated, you will need to add the new URL using one of the methods above. It will be downloaded, extracted, and then merged, overwriting any conflicting files in the installation. For simple mods that is probably enough. If the mod developer states that you will need to uninstall a previous version to update, you will have to do this manually. You may do that at any time if you want to be extra cautious.
 
+## Time Zone
+By default the container uses the UTC time zone. This does not affect running the server or the files themselves but it does affect things that like the SPT Backup Service, which sets the backup folder name to the current timestamp.
+
+If you want to change the time zone there are two methods (DO NOT USE BOTH)
+- Mount `/etc/timezone` as a volume
+- Set the `TZ` environment variable
+
+### Mount `/etc/timezone` as a volume
+This will match the time zone inside to the time zone of the host system.
+- If using docker-compose, add `/etc/timezone:/etc/timezone:ro` under the volumes section.
+- If using docker run, add `-v /etc/timezone:/etc/timezone:ro \` to the run command
+
+### Set the `TZ` environment variable
+This should be set to a TZ Identifier (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ identifier).
+- If using docker-compose, add `TZ=US/Eastern` under the `environment` section, substituting `US/Eastern` for your desired time zone.
+- If using docker run, add `-e TZ=US/Eastern \` to the run command
+
 # 🌐 Environment Variables
 None of these env vars are required, but they may be useful.
 | Env var                   | Default | Description |
@@ -229,6 +247,7 @@ None of these env vars are required, but they may be useful.
 | `CHANGE_PERMISSIONS`      | true    | If this is set to false, the container will not change file permissions of the server files. Make sure the running user has permissions to access these files |
 | `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
+| `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details |
 
 
 # 💬 FAQ

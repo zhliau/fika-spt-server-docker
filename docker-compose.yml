@@ -20,6 +20,10 @@ services:
       - ENABLE_PROFILE_BACKUPS=true
       # If you don't want to automatically change the SPT server IPs to allow it to listen on all interfaces, set this to false.
       - LISTEN_ALL_NETWORKS=true
+      # If you want to override the timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ codes
+      # - TZ=US/Eastern
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./server:/opt/server
+      # If you want to match the host system timezone
+      # - /etc/timezone:/etc/timezone:ro
