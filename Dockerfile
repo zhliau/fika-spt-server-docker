@@ -1,8 +1,5 @@
 FROM debian:bookworm AS build
 
-# SPT Server git tag or sha
-ARG SPT_SERVER_SHA=3.10.5
-
 USER root
 RUN apt update && apt install -y --no-install-recommends \
     curl \
@@ -19,6 +16,10 @@ RUN ASDF_DIR=$HOME/.asdf/ \. "$HOME/.asdf/asdf.sh" \
 WORKDIR /
 RUN git clone https://github.com/sp-tarkov/server.git spt
 
+# SPT Server git tag or sha
+ARG SPT_SERVER_SHA=3.10.5
+ARG BUILD_TYPE=release
+
 WORKDIR /spt/project
 RUN git checkout $SPT_SERVER_SHA
 RUN git lfs pull
@@ -28,7 +29,7 @@ ENV PATH="$PATH:/root/.asdf/shims"
 RUN asdf global nodejs 20.11.1
 
 RUN npm install
-RUN npm run build:release
+RUN npm run build:$BUILD_TYPE
 
 RUN mv build /opt/build
 RUN rm -rf /spt
