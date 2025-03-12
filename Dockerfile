@@ -17,7 +17,7 @@ WORKDIR /
 RUN git clone https://github.com/sp-tarkov/server.git spt
 
 # SPT Server git tag or sha
-ARG SPT_SERVER_SHA=3.10.5
+ARG SPT_SERVER_SHA=3.11.0
 ARG BUILD_TYPE=release
 
 WORKDIR /spt/project
@@ -49,7 +49,7 @@ RUN apt update && apt install -y --no-install-recommends \
 
 WORKDIR /opt/server
 
-ARG SPT_SERVER_SHA=3.10.5
+ARG SPT_SERVER_SHA=3.11.0
 ARG FIKA_VERSION=v2.3.6
 ENV SPT_VERSION=$SPT_SERVER_SHA
 ENV FIKA_VERSION=$FIKA_VERSION

@@ -10,7 +10,6 @@ backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
 spt_version=${SPT_VERSION:-3.10.5}
-# Support semver with suffixes for tags e.g. 3.11.0-BE-20250219
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 spt_data_dir=$mounted_dir/SPT_Data
