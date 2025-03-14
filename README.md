@@ -248,6 +248,7 @@ None of these env vars are required, but they may be useful.
 | `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
 | `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details |
+| `NUM_HEADLESS_PROFILES`   | null    | Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer. This will only work if the `fika.jsonc` config file exists, the server automatically generates one on startup if it is missing |
 
 
 # 💬 FAQ

@@ -31,6 +31,8 @@ take_ownership=${TAKE_OWNERSHIP:-true}
 change_permissions=${CHANGE_PERMISSIONS:-true}
 enable_profile_backup=${ENABLE_PROFILE_BACKUP:-true}
 
+num_headless_profiles=${NUM_HEADLESS_PROFILES:+"$NUM_HEADLESS_PROFILES"}
+
 install_other_mods=${INSTALL_OTHER_MODS:-false}
 
 start_crond() {
@@ -48,6 +50,11 @@ create_running_user() {
 }
 
 validate() {
+     if [[ ${num_headless_profiles:+1} && ! $num_headless_profiles =~ ^[0-9]+$ ]]; then
+         echo "NUM_HEADLESS_PROFILES must be a number.";
+         exit 1
+     fi
+
     # Must mount /opt/server directory, otherwise the serverfiles are in container and there's no persistence
     if [[ ! $(mount | grep $mounted_dir) ]]; then
         echo "Please mount a volume/directory from the host to $mounted_dir. This server container must store files on the host."
@@ -155,6 +162,13 @@ try_update_fika() {
     echo "Successfully updated Fika from $1 to $fika_version"
 }
 
+set_num_headless_profiles() {
+    if [[ ${num_headless_profiles:+1} && -f $fika_mod_dir/$fika_config_path ]]; then
+        echo "Setting number of headless profiles to $num_headless_profiles"
+        modified_fika_jsonc="$(jq --arg jq_num_headless_profiles $num_headless_profiles '.headless.profiles.amount=$jq_num_headless_profiles' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
+    fi
+}
+
 #######
 # SPT #
 #######
@@ -199,6 +213,17 @@ try_update_spt() {
     exit 0
 }
 
+spt_listen_on_all_networks() {
+    # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
+    http_json=$mounted_dir/SPT_Data/Server/configs/http.json
+    modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
+    # If fika server config exists, modify that too
+    if [[ -f "$fika_mod_dir/$fika_config_path" ]]; then
+        echo "Setting listen all networks in Fika SPT config override"
+        modified_fika_jsonc="$(jq '.server.SPT.http.ip = "0.0.0.0" | .server.SPT.http.backendIp = "0.0.0.0"' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
+    fi
+}
+
 ##############
 # Other Mods #
 ##############
@@ -212,12 +237,6 @@ install_requested_mods() {
 ##############
 # Run it All #
 ##############
-
-spt_listen_on_all_networks() {
-    # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
-    http_json=$mounted_dir/SPT_Data/Server/configs/http.json
-    modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
-}
 
 validate
 
@@ -243,6 +262,8 @@ if [[ "$install_fika" == "true" ]]; then
         echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
     fi
 fi
+
+set_num_headless_profiles
 
 if [[ "$install_other_mods" == "true" ]]; then
     install_requested_mods
