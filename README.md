@@ -35,7 +35,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.10.5` for SPT `3.10.5`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.11.0` for SPT `3.11.0`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -45,7 +45,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:3.10.5
+docker pull ghcr.io/zhliau/fika-spt-server-docker:3.11.0
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -57,7 +57,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:3.10.5
+  ghcr.io/zhliau/fika-spt-server-docker:3.11.0
 ```
 
 ### docker-compose
@@ -148,7 +148,7 @@ The container will validate your Fika server mod version matches the image's exp
 > If you've made any changes to files within `SPT_Data`, make backups! This upgrade process will remove that folder!
 
 A new image will be tagged with the new SPT version number, and thus you will need to
-- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.10.5`
+- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.11.0`
 - Pull the new image with `docker pull` or `docker-compose pull`
 - Bring up the container again with `docker run` or `docker-compose up`
 
@@ -240,7 +240,7 @@ None of these env vars are required, but they may be useful.
 | `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you |
 | `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified  |
 | `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true |
-| `FIKA_VERSION`            | v2.3.6  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
+| `FIKA_VERSION`            | v2.4.0  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
 | `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
 | `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
@@ -248,6 +248,7 @@ None of these env vars are required, but they may be useful.
 | `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
 | `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details |
+| `NUM_HEADLESS_PROFILES`   | null    | Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer. This will only work if the `fika.jsonc` config file exists, the server automatically generates one on startup if it is missing |
 
 
 # 💬 FAQ
@@ -281,16 +282,17 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 # 💻 Development
 ### Building
 You can overwrite the expected SPT version by setting the `SPT_SHA` build arg. This must correspond with a git ref (tag or branch) in the
-SPT Server github repo. This version must be a release [semver](https://semver.org/) value, and thus pre-release refs like `3.10.5-dev` will not work.
-This is because the value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot.
+SPT Server github repo. This version must be a release [semver](https://semver.org/) value, or a pre-release ref like `3.11.0-dev`
+The value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot. If using a pre-release version tag,
+everything including and after the `-` is dropped when comparing version strings.
 
 You can similarly override the Fika version by setting the `FIKA_VERSION` build arg. Make sure this matches the Fika version slug in the Fika Server download URL.
 
 The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION_SLUG>/fika-server.zip`
 
 ```bash
-# Server binary built using SPT Server 3.10.5 git tag, image tagged as fika-spt-server:latest
-# Downloads and validates Fika version v2.3.6
+# Server binary built using SPT Server 3.11.0 git tag, image tagged as fika-spt-server:latest
+# Downloads and validates Fika version v2.4.0
 
-VERSION=latest FIKA_VERSION=v2.3.6 SPT_SHA=3.10.5 ./build
+VERSION=latest FIKA_VERSION=v2.4.0 SPT_SHA=3.11.0 ./build
 ```

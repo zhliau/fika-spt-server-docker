@@ -1,7 +1,12 @@
 #!/bin/bash
 
 version_tag=${VERSION:-latest}
-spt_sha=${SPT_SHA:-3.10.5}
-fika_version=${FIKA_VERSION:-v2.3.6}
+spt_sha=${SPT_SHA:-3.11.0}
+fika_version=${FIKA_VERSION:-v2.4.0}
+build_type=${BUILD_TYPE:-release}
 
-docker build . --build-arg SPT_SERVER_SHA=$spt_sha --build-arg FIKA_VERSION=$fika_version -t fika-spt-server-docker:$version_tag $@
+docker build . \
+    --build-arg BUILD_TYPE=$build_type \
+    --build-arg SPT_SERVER_SHA=$spt_sha \
+    --build-arg FIKA_VERSION=$fika_version \
+    -t fika-spt-server-docker:$version_tag $@
