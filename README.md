@@ -240,7 +240,7 @@ None of these env vars are required, but they may be useful.
 | `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you |
 | `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified  |
 | `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true |
-| `FIKA_VERSION`            | v2.4.0  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server.zip` |
+| `FIKA_VERSION`            | v2.4.1  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server-$FIKA_VERSION.zip` |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
 | `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
 | `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
@@ -288,11 +288,11 @@ everything including and after the `-` is dropped when comparing version strings
 
 You can similarly override the Fika version by setting the `FIKA_VERSION` build arg. Make sure this matches the Fika version slug in the Fika Server download URL.
 
-The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION_SLUG>/fika-server.zip`
+The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION>/fika-server-<FIKA_VERSION_WITHOUT_V>.zip`
 
 ```bash
 # Server binary built using SPT Server 3.11.0 git tag, image tagged as fika-spt-server:latest
-# Downloads and validates Fika version v2.4.0
+# Downloads and validates Fika version v2.4.1
 
-VERSION=latest FIKA_VERSION=v2.4.0 SPT_SHA=3.11.0 ./build
+VERSION=latest FIKA_VERSION=v2.4.1 SPT_SHA=3.11.0 ./build
 ```
