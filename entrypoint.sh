@@ -158,6 +158,7 @@ try_update_fika() {
     rm -r $fika_mod_dir
     install_fika_mod
     # restore config
+    mkdir -p $fika_mod_dir/assets/configs
     cp $fika_backup_dir/fika-server/$fika_config_path $fika_mod_dir/$fika_config_path
     echo "Successfully updated Fika from $1 to $fika_version"
 }
