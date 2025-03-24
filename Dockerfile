@@ -14,11 +14,11 @@ RUN ASDF_DIR=$HOME/.asdf/ \. "$HOME/.asdf/asdf.sh" \
     && asdf install nodejs 20.11.1
 
 WORKDIR /
-RUN git clone https://github.com/sp-tarkov/server.git spt
-
 # SPT Server git tag or sha
 ARG SPT_SERVER_SHA=3.11.1
 ARG BUILD_TYPE=release
+
+RUN git clone https://github.com/sp-tarkov/server.git spt
 
 WORKDIR /spt/project
 RUN git checkout $SPT_SERVER_SHA
@@ -50,7 +50,7 @@ RUN apt update && apt install -y --no-install-recommends \
 WORKDIR /opt/server
 
 ARG SPT_SERVER_SHA=3.11.1
-ARG FIKA_VERSION=v2.4.1
+ARG FIKA_VERSION=v2.4.3
 ENV SPT_VERSION=$SPT_SERVER_SHA
 ENV FIKA_VERSION=$FIKA_VERSION
 
