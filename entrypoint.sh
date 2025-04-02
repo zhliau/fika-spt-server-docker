@@ -2,18 +2,19 @@
 
 build_dir=/opt/build
 mounted_dir=/opt/server
-spt_binary=SPT.Server.exe
+spt_binary=SPTarkov.Server
 uid=${UID:-1000}
 gid=${GID:-1000}
 
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-3.11.2}
+spt_version=${SPT_VERSION:-4.0.0}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
-spt_data_dir=$mounted_dir/SPT_Data
-spt_core_config=$spt_data_dir/Server/configs/core.json
+nodejs_spt_data_dir=$mounted_dir/SPT_Data
+spt_data_dir=$mounted_dir/Assets
+spt_core_config=$spt_data_dir/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 fika_version=${FIKA_VERSION:-v2.4.4}
@@ -60,6 +61,18 @@ validate() {
         echo "Please mount a volume/directory from the host to $mounted_dir. This server container must store files on the host."
         echo "You can do this with docker run's -v flag e.g. '-v /path/on/host:/opt/server'"
         echo "or with docker-compose's 'volumes' directive"
+        exit 1
+    fi
+
+    # Validate NodeJS SPT Server (version < 4.0.0)
+    if [[ -d $nodejs_spt_data_dir && -f $nodejs_spt_data_dir/Server/configs/core.json ]]; then
+        echo "  ==============="
+        echo "  === WARNING ==="
+        echo "  ==============="
+        echo ""
+        echo "The existing server files mounted to /opt/server appear to be SPT Server version < 4.0.0"
+        echo "This image is incompatible and cannot automatically update your existing server files."
+        echo "Please remove all your server files and restart this container to reinstall SPT"
         exit 1
     fi
 
@@ -174,8 +187,8 @@ set_num_headless_profiles() {
 # SPT #
 #######
 install_spt() {
-    # Remove the SPT_Data server, since databases tend to be different between versions
-    rm -rf $mounted_dir/SPT_Data
+    # Remove the server files, since databases tend to be different between versions
+    rm -rf $mounted_dir/Assets
     cp -r $build_dir/* $mounted_dir
     make_and_own_spt_dirs
 }
@@ -216,7 +229,7 @@ try_update_spt() {
 
 spt_listen_on_all_networks() {
     # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
-    http_json=$mounted_dir/SPT_Data/Server/configs/http.json
+    http_json=$mounted_dir/Assets/configs/http.json
     modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
     # If fika server config exists, modify that too
     if [[ -f "$fika_mod_dir/$fika_config_path" ]]; then
@@ -282,4 +295,4 @@ set_permissions
 
 set_timezone
 
-su - $(id -nu $uid) -c "cd $mounted_dir && ./SPT.Server.exe"
+su - $(id -nu $uid) -c "cd $mounted_dir && ./$spt_binary"

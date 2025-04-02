@@ -1,6 +1,6 @@
 services:
   fika-server:
-    image: ghcr.io/zhliau/fika-spt-server-docker:latest
+    image: fika-spt-server-docker:4.0.0
     ports:
       - 6969:6969
     environment:
