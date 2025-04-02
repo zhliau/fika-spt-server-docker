@@ -70,9 +70,9 @@ validate() {
         echo "  === WARNING ==="
         echo "  ==============="
         echo ""
-        echo "The existing server files mounted to /opt/server appear to be SPT Server version < 4.0.0"
-        echo "This image is incompatible and cannot automatically update your existing server files."
-        echo "Please remove all your server files and restart this container to reinstall SPT"
+        echo "  The existing server files mounted to /opt/server appear to be from SPT Server version < 4.0.0"
+        echo "  This image is incompatible and cannot automatically update your existing server files."
+        echo "  Please remove these files or mount a different empty directory and restart this container to reinstall SPT"
         exit 1
     fi
 
