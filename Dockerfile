@@ -2,39 +2,63 @@ FROM debian:bookworm AS build
 
 USER root
 RUN apt update && apt install -y --no-install-recommends \
+    aria2 \
     curl \
     ca-certificates \
+    libicu-dev \
     git \
-    git-lfs
+    git-lfs \
+    unzip \
+    7zip \
+    vim \
+    cron \
+    xmlstarlet \
+    jq
+
+# SPT Server git tag or sha
+ARG SPT_SERVER_SHA=4.0.0-buildtest
+ARG BUILD_TYPE=Release
+ARG DOTNET_VERSION=9.0.202
+ARG RUNTIME_IDENTIFIER=linux-x64
 
 # asdf version manager
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1
+
 RUN ASDF_DIR=$HOME/.asdf/ \. "$HOME/.asdf/asdf.sh" \
-    && asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git \
-    && asdf install nodejs 20.11.1
+    && asdf plugin add dotnet https://github.com/hensou/asdf-dotnet.git \
+    && asdf install dotnet $DOTNET_VERSION
 
 WORKDIR /
-# SPT Server git tag or sha
-ARG SPT_SERVER_SHA=3.11.2
-ARG BUILD_TYPE=release
 
-RUN git clone https://github.com/sp-tarkov/server.git spt
+RUN git clone https://github.com/sp-tarkov/server-csharp.git spt
 
-WORKDIR /spt/project
+WORKDIR /spt
 RUN git checkout $SPT_SERVER_SHA
 RUN git lfs pull
 
 ENV PATH="$PATH:/root/.asdf/bin"
 ENV PATH="$PATH:/root/.asdf/shims"
-RUN asdf global nodejs 20.11.1
+RUN asdf global dotnet $DOTNET_VERSION
+RUN asdf current
 
-RUN npm install
-RUN npm run build:$BUILD_TYPE
+# Cribbed from .asdf/plugins/dotnet/set-dotnet-env.bash
+ENV DOTNET_ROOT=/root/.asdf/installs/dotnet/$DOTNET_VERSION
+ENV DOTNET_VERSION=$DOTNET_VERSION
+ENV MSBuildSDKsPath=$DOTNET_ROOT/sdk/$DOTNET_VERSION/Sdks
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-RUN mv build /opt/build
+# Add runtime identifier to build self-contained binary
+# This is because the running user is not necessarily root,
+# and will not have access to the dotnet framework installed by asdf
+RUN xmlstarlet ed -L -s /Project/PropertyGroup -t elem -n "RuntimeIdentifier" -v "$RUNTIME_IDENTIFIER" Build.props
+RUN dotnet build --configuration=$BUILD_TYPE --sc
+RUN dotnet publish --configuration=$BUILD_TYPE --sc
+
+RUN cp -r SPTarkov.Server/bin/Release/net9.0/$RUNTIME_IDENTIFIER /opt/build
 RUN rm -rf /spt
 
 FROM debian:bookworm-slim
+
 COPY --from=build /opt/build /opt/build
 
 RUN apt update && apt install -y --no-install-recommends \
@@ -49,7 +73,7 @@ RUN apt update && apt install -y --no-install-recommends \
 
 WORKDIR /opt/server
 
-ARG SPT_SERVER_SHA=3.11.2
+ARG SPT_SERVER_SHA=4.0.0-buildtest
 ARG FIKA_VERSION=v2.4.4
 ENV SPT_VERSION=$SPT_SERVER_SHA
 ENV FIKA_VERSION=$FIKA_VERSION
