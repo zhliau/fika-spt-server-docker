@@ -35,7 +35,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.11.2` for SPT `3.11.2`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.11.3` for SPT `3.11.3`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -45,7 +45,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:3.11.2
+docker pull ghcr.io/zhliau/fika-spt-server-docker:3.11.3
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -57,7 +57,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:3.11.2
+  ghcr.io/zhliau/fika-spt-server-docker:3.11.3
 ```
 
 ### docker-compose
@@ -148,7 +148,7 @@ The container will validate your Fika server mod version matches the image's exp
 > If you've made any changes to files within `SPT_Data`, make backups! This upgrade process will remove that folder!
 
 A new image will be tagged with the new SPT version number, and thus you will need to
-- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.11.2`
+- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.11.3`
 - Pull the new image with `docker pull` or `docker-compose pull`
 - Bring up the container again with `docker run` or `docker-compose up`
 
@@ -282,7 +282,7 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 # 💻 Development
 ### Building
 You can overwrite the expected SPT version by setting the `SPT_SHA` build arg. This must correspond with a git ref (tag or branch) in the
-SPT Server github repo. This version must be a release [semver](https://semver.org/) value, or a pre-release ref like `3.11.2-dev`
+SPT Server github repo. This version must be a release [semver](https://semver.org/) value, or a pre-release ref like `3.11.3-dev`
 The value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot. If using a pre-release version tag,
 everything including and after the `-` is dropped when comparing version strings.
 
@@ -291,8 +291,8 @@ You can similarly override the Fika version by setting the `FIKA_VERSION` build 
 The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION>/fika-server-<FIKA_VERSION_WITHOUT_V>.zip`
 
 ```bash
-# Server binary built using SPT Server 3.11.2 git tag, image tagged as fika-spt-server:latest
+# Server binary built using SPT Server 3.11.3 git tag, image tagged as fika-spt-server:latest
 # Downloads and validates Fika version v2.4.4
 
-VERSION=latest FIKA_VERSION=v2.4.4 SPT_SHA=3.11.2 ./build
+VERSION=latest FIKA_VERSION=v2.4.4 SPT_SHA=3.11.3 ./build
 ```
