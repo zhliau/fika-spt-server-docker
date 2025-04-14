@@ -110,6 +110,7 @@ services:
 
 If you want to migrate to this docker image with an existing SPT install:
 - Set your volume mount to your existing SPT server directory (the dir containing the SPT.Server.exe file)
+- If these existing server files were from a Windows installation, **delete** the `SPT.Server.exe` file to have the container use its own Linux-compiled binary
 - If you don't have Fika yet, you can provide a `INSTALL_FIKA` env var to tell the container to install the server mod for you
 - Run the container, optionally specify if you want the container to auto update the SPT server files or fika server mod via the `AUTO_UPDATE_SPT` and `AUTO_UPDATE_FIKA` env vars
 
@@ -132,7 +133,7 @@ services:
 ### When Fika server mod is updated for the same SPT version
 This image will hopefully be updated in a timely manner to the new Fika server mod version, and the image will be rebuilt with the same SPT version tag. Thus, all you will need to do is
 - Pull the image again with `docker pull` or `docker-compose pull`
-- Bring up the container again with `docker run` or `docker-compose up`
+- Bring up the container again with `docker run` or `docker-compose up` (**NOT** `docker[-compose] restart` since this will not recreate the container)
 
 The container will validate your Fika server mod version matches the image's expected version, and if not it will
 - Back up the entire Fika server mod including configs to a `backups/fika` directory in the mounted server directory
@@ -150,7 +151,7 @@ The container will validate your Fika server mod version matches the image's exp
 A new image will be tagged with the new SPT version number, and thus you will need to
 - Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.11.3`
 - Pull the new image with `docker pull` or `docker-compose pull`
-- Bring up the container again with `docker run` or `docker-compose up`
+- Bring up the container again with `docker run` or `docker-compose up` (**NOT** `docker[-compose] restart` since this will not recreate the container)
 
 The image will validate that your SPT version in the serverfiles matches the image's expected SPT version, and if not it will
 - Back up the entire `user/` directory to a `backups/spt/` directory in the mounted server directory
