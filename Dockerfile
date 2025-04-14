@@ -50,7 +50,7 @@ RUN apt update && apt install -y --no-install-recommends \
 WORKDIR /opt/server
 
 ARG SPT_SERVER_SHA=3.11.3
-ARG FIKA_VERSION=v2.4.4
+ARG FIKA_VERSION=v2.4.5
 ENV SPT_VERSION=$SPT_SERVER_SHA
 ENV FIKA_VERSION=$FIKA_VERSION
 
@@ -58,4 +58,7 @@ COPY entrypoint.sh /usr/bin/entrypoint
 COPY scripts/backup.sh /usr/bin/backup
 COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
 COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
+
+# Docker desktop doesn't allow you to configure port mappings unless this is present
+EXPOSE 6969
 ENTRYPOINT ["/usr/bin/entrypoint"]
