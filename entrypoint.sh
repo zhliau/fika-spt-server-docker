@@ -16,7 +16,7 @@ spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/Server/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
-fika_version=${FIKA_VERSION:-v2.4.5}
+fika_version=${FIKA_VERSION:-v2.4.6}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
