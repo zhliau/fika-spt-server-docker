@@ -2,7 +2,7 @@
 
 build_dir=/opt/build
 mounted_dir=/opt/server
-spt_binary=SPTarkov.Server
+spt_binary=SPTarkov.Server.Linux
 uid=${UID:-1000}
 gid=${GID:-1000}
 
