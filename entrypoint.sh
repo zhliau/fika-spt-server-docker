@@ -2,7 +2,7 @@
 
 build_dir=/opt/build
 mounted_dir=/opt/server
-spt_binary=SPTarkov.Server.Linux
+spt_binary=SPT.Server.Linux
 uid=${UID:-1000}
 gid=${GID:-1000}
 
@@ -14,8 +14,9 @@ spt_version=${SPT_VERSION:-4.0.0-40087-0582f8d}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 
+nodejs_spt_data_dir=$mounted_dir/SPT_Data
 spt_data_dir=$mounted_dir/SPT_Data
-spt_core_config=$spt_data_dir/configs/core.json
+spt_core_config=$nodejs_spt_data_dir/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 fika_version=${FIKA_VERSION:-1.0.0}
@@ -24,7 +25,7 @@ fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$mounted_dir/user/mods/fika-server
 fika_artifact=Fika.Server.Release.$(echo $fika_version | cut -d 'v' -f 2).zip
-fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/$fika_version/$fika_artifact"
+fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$fika_version/$fika_artifact"
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
@@ -53,10 +54,10 @@ create_running_user() {
 }
 
 validate() {
-     if [[ ${num_headless_profiles:+1} && ! $num_headless_profiles =~ ^[0-9]+$ ]]; then
-         echo "NUM_HEADLESS_PROFILES must be a number.";
-         exit 1
-     fi
+    if [[ ${num_headless_profiles:+1} && ! $num_headless_profiles =~ ^[0-9]+$ ]]; then
+        echo "NUM_HEADLESS_PROFILES must be a number.";
+        exit 1
+    fi
 
     # Must mount /opt/server directory, otherwise the serverfiles are in container and there's no persistence
     if [[ ! $(mount | grep $mounted_dir) ]]; then
@@ -70,30 +71,34 @@ validate() {
     # If we have sptVersion in the core config, this means this existing server <= SPT v3
     # If existing SPT major version is less than 4, existing files are not compatible
     echo "Validating SPT version"
-    if [[ -d $spt_data_dir && -f $spt_core_config ]]; then
-        echo "  ==============="
-        echo "  === WARNING ==="
-        echo "  ==============="
-        echo ""
-        echo "  The existing server files mounted to /opt/server appear to be from SPT Server version < 4.0.0"
-        echo "  This image is incompatible and cannot automatically update your existing server files."
-        echo "  Please remove these files or mount a different empty directory and restart this container to reinstall SPT"
-        exit 1
+    if [[ -d $nodejs_spt_data_dir && -f $spt_core_config ]]; then
+        existing_spt_version=$(jq -r '.sptVersion' $spt_core_config)
+        if [[ $existing_spt_version != "null" && $existing_spt_version != "$spt_version" ]]; then
+            echo "  ==============="
+            echo "  === WARNING ==="
+            echo "  ==============="
+            echo ""
+            echo "  The existing server files mounted to /opt/server appear to be from SPT Server version < 4.0.0"
+            echo "  This image is incompatible and cannot automatically update your existing server files."
+            echo "  Please remove these files or mount a different empty directory and restart this container to reinstall SPT"
+            exit 1
+        fi
     fi
 
-    # Grab version from binary using exiftool
-    existing_spt_version=$(exiftool -s -s -s -ProductVersion $mounted_dir/SPT.Server.dll | cut -d '-' -f 1)
-    if [[ $existing_spt_version != "$spt_version" ]]; then
-        try_update_spt $existing_spt_version
-    fi
+    if [[ -d $spt_data_dir ]]; then
+        # Grab version from binary using exiftool
+        existing_spt_version=$(exiftool -s -s -s -ProductVersion $mounted_dir/SPT.Server.dll | cut -d '-' -f 1)
+        if [[ $existing_spt_version != "$spt_version" ]]; then
+            try_update_spt $existing_spt_version
+        fi
 
-    # Validate fika version
-    if [[ -d $fika_mod_dir && $install_fika == "true" ]]; then
-        echo "Validating Fika version"
-        existing_fika_version=$(jq -r '.version' $fika_mod_dir/package.json)
-        existing_fika_version=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaShared.dll | cut -d '-' -f 1)
-        if [[ "v$existing_fika_version" != $fika_version ]]; then
-            try_update_fika "v$existing_fika_version"
+        # Validate fika version
+        if [[ -d $fika_mod_dir && $install_fika == "true" ]]; then
+            echo "Validating Fika version"
+            existing_fika_version=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaShared.dll | cut -d '-' -f 1)
+            if [[ "v$existing_fika_version" != $fika_version ]]; then
+                try_update_fika "v$existing_fika_version"
+            fi
         fi
     fi
 }
@@ -150,7 +155,9 @@ install_fika_mod() {
     echo "Installing Fika servermod version $fika_version"
     # Assumes fika_server.zip artifact contains user/mods/fika-server
     curl -sL $fika_release_url -O
-    unzip -q $fika_artifact -d $mounted_dir
+    unzip -q $fika_artifact -d $mounted_dir/temp_fika/
+    mv $mounted_dir/temp_fika/SPT/user/mods/fika-server $mounted_dir/user/mods/
+    rm -r $mounted_dir/temp_fika
     rm $fika_artifact
     echo "Installation complete"
 }
@@ -175,7 +182,10 @@ try_update_fika() {
     install_fika_mod
     # restore config
     mkdir -p $fika_mod_dir/assets/configs
-    cp $fika_backup_dir/fika-server/$fika_config_path $fika_mod_dir/$fika_config_path
+    existing_fika_config=$fika_backup_dir/fika-server/$fika_config_path
+    if [[ -f $existing_fika_config ]]; then
+        cp $existing_fika_config $fika_mod_dir/$fika_config_path
+    fi
     echo "Successfully updated Fika from $1 to $fika_version"
 }
 
@@ -192,7 +202,7 @@ set_num_headless_profiles() {
 install_spt() {
     # Remove the server files, since databases tend to be different between versions
     rm -rf $spt_data_dir
-    cp -r $build_dir/* $mounted_dir
+    cp -r $build_dir/SPT/* $mounted_dir
     make_and_own_spt_dirs
 }
 
