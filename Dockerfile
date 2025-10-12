@@ -68,6 +68,7 @@ RUN apt update && apt install -y --no-install-recommends \
     7zip \
     vim \
     cron \
+    exiftool \
     jq
 
 # Runtime dependencies
@@ -76,18 +77,16 @@ RUN dpkg -i packages-microsoft-prod.deb
 RUN rm packages-microsoft-prod.deb
 RUN apt update && apt install -y aspnetcore-runtime-9.0
 
-ARG SPT_RELEASE=BLEEDING_EDGE_MODS
-ARG SPT_RELEASE_VERSION=4.0.0-36679-8d4191a-20250618
+ARG SPT_RELEASE_VERSION=4.0.0-40087-0582f8d
 
 WORKDIR /opt/build
-RUN curl -sL "https://spt-mirror.refringe.com/builds/SPT-${SPT_RELEASE}-${SPT_RELEASE_VERSION}.7z" -o spt.7z
+RUN curl -sL "https://spt-releases.modd.in/SPT-${SPT_RELEASE_VERSION}.7z" -o spt.7z
 RUN ls -la
 RUN 7zz x spt.7z
 RUN ls -la
 
-ARG SPT_SERVER_SHA=4.0.0-buildtest
-ARG FIKA_VERSION=v2.4.5
-ENV SPT_VERSION=$SPT_SERVER_SHA
+ARG FIKA_VERSION=1.0.0
+ENV SPT_VERSION=$SPT_RELEASE_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
 
 COPY entrypoint.sh /usr/bin/entrypoint

@@ -9,21 +9,22 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-4.0.0}
+spt_current_major_version=4
+spt_version=${SPT_VERSION:-4.0.0-40087-0582f8d}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
-nodejs_spt_data_dir=$mounted_dir/SPT_Data
-spt_data_dir=$mounted_dir/Assets
+
+spt_data_dir=$mounted_dir/SPT_Data
 spt_core_config=$spt_data_dir/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
-fika_version=${FIKA_VERSION:-v2.4.5}
+fika_version=${FIKA_VERSION:-1.0.0}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$mounted_dir/user/mods/fika-server
-fika_artifact=fika-server-$(echo $fika_version | cut -d 'v' -f 2).zip
-fika_release_url="https://github.com/project-fika/Fika-Server/releases/download/$fika_version/$fika_artifact"
+fika_artifact=Fika.Server.Release.$(echo $fika_version | cut -d 'v' -f 2).zip
+fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/$fika_version/$fika_artifact"
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
@@ -36,6 +37,7 @@ num_headless_profiles=${NUM_HEADLESS_PROFILES:+"$NUM_HEADLESS_PROFILES"}
 
 install_other_mods=${INSTALL_OTHER_MODS:-false}
 
+# TODO Remove this functionality, it is now built into SPT Server
 start_crond() {
     echo "Enabling profile backups"
     /etc/init.d/cron start
@@ -64,8 +66,11 @@ validate() {
         exit 1
     fi
 
-    # Validate NodeJS SPT Server (version < 4.0.0)
-    if [[ -d $nodejs_spt_data_dir && -f $nodejs_spt_data_dir/Server/configs/core.json ]]; then
+    # Validate SPT version
+    # If we have sptVersion in the core config, this means this existing server <= SPT v3
+    # If existing SPT major version is less than 4, existing files are not compatible
+    echo "Validating SPT version"
+    if [[ -d $spt_data_dir && -f $spt_core_config ]]; then
         echo "  ==============="
         echo "  === WARNING ==="
         echo "  ==============="
@@ -76,19 +81,17 @@ validate() {
         exit 1
     fi
 
-    # Validate SPT version
-    if [[ -d $spt_data_dir && -f $spt_core_config ]]; then
-        echo "Validating SPT version"
-        existing_spt_version=$(jq -r '.sptVersion' $spt_core_config)
-        if [[ $existing_spt_version != "$spt_version" ]]; then
-            try_update_spt $existing_spt_version
-        fi
+    # Grab version from binary using exiftool
+    existing_spt_version=$(exiftool -s -s -s -ProductVersion $mounted_dir/SPT.Server.dll | cut -d '-' -f 1)
+    if [[ $existing_spt_version != "$spt_version" ]]; then
+        try_update_spt $existing_spt_version
     fi
 
     # Validate fika version
     if [[ -d $fika_mod_dir && $install_fika == "true" ]]; then
         echo "Validating Fika version"
         existing_fika_version=$(jq -r '.version' $fika_mod_dir/package.json)
+        existing_fika_version=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaShared.dll | cut -d '-' -f 1)
         if [[ "v$existing_fika_version" != $fika_version ]]; then
             try_update_fika "v$existing_fika_version"
         fi
@@ -188,7 +191,7 @@ set_num_headless_profiles() {
 #######
 install_spt() {
     # Remove the server files, since databases tend to be different between versions
-    rm -rf $mounted_dir/Assets
+    rm -rf $spt_data_dir
     cp -r $build_dir/* $mounted_dir
     make_and_own_spt_dirs
 }
@@ -229,7 +232,7 @@ try_update_spt() {
 
 spt_listen_on_all_networks() {
     # Changes the ip and backendIp to 0.0.0.0 so that the server will listen on all network interfaces.
-    http_json=$mounted_dir/Assets/configs/http.json
+    http_json=$spt_data_dir/configs/http.json
     modified_http_json="$(jq '.ip = "0.0.0.0" | .backendIp = "0.0.0.0"' $http_json)" && echo -E "${modified_http_json}" > $http_json
     # If fika server config exists, modify that too
     if [[ -f "$fika_mod_dir/$fika_config_path" ]]; then
