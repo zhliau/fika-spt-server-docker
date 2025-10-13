@@ -296,6 +296,12 @@ if [[ "$install_other_mods" == "true" ]]; then
 fi
 
 if [[ "$enable_profile_backup" == "true" ]]; then
+    echo "  ==============="
+    echo "  === WARNING ==="
+    echo ""
+    echo "  This profile backup feature will be deprecated in the near future"
+    echo "  since it is now built into SPT Server"
+    echo "  ==============="
     start_crond
 fi
 
