@@ -9,6 +9,11 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 
 That's it! The image has everything else you need to run an SPT Server, with Fika if desired.
 
+> [!WARNING]
+> With the release of SPT 4.0.0 and the rewrite to use C#, this image going forward will no longer support prior versions due to a significant change in how the image operates.
+> 
+> If you wish to use the LTS version of SPT (3.11.4), make sure you specify the image tag `fika-spt-server-docker:3.11.4` explicitly instead of using `latest`)
+
 - [🪄 Features](#-features)
 - [🥡 Releases](#-releases)
 - [🛫 Running](#-running)
@@ -45,7 +50,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:3.11.4
+docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.0
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -57,7 +62,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:3.11.4
+  ghcr.io/zhliau/fika-spt-server-docker:4.0.0
 ```
 
 ### docker-compose
@@ -149,7 +154,7 @@ The container will validate your Fika server mod version matches the image's exp
 > If you've made any changes to files within `SPT_Data`, make backups! This upgrade process will remove that folder!
 
 A new image will be tagged with the new SPT version number, and thus you will need to
-- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:3.11.4`
+- Update the image version tag e.g. `fika-spt-server-docker:3.9.8` to `fika-spt-server-docker:4.0.0`
 - Pull the new image with `docker pull` or `docker-compose pull`
 - Bring up the container again with `docker run` or `docker-compose up` (**NOT** `docker[-compose] restart` since this will not recreate the container)
 
