@@ -12,10 +12,12 @@ RUN apt update && apt install -y --no-install-recommends \
     jq
 
 # Runtime dependencies
-RUN curl -L  https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -o packages-microsoft-prod.deb
+# Temporarily add package repo manually since GHA runners can't seem to pull it
+COPY data/packages-microsoft-prod.deb /
+#RUN curl -L  https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -o packages-microsoft-prod.deb
 RUN dpkg -i packages-microsoft-prod.deb
-RUN rm packages-microsoft-prod.deb
-RUN apt update && apt install -y dotnet-sdk-9.0
+#RUN rm packages-microsoft-prod.deb
+RUN apt update && apt install -y aspnetcore-runtime-9.0
 
 ARG SPT_RELEASE_VERSION=4.0.0-40087-0582f8d
 
