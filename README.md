@@ -282,6 +282,10 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 
 # 💻 Development
 ### Building
+> [!WARNING]
+> As of SPT version 4.0.0, these instructions are deprecated because we use precompiled server binaries
+> In the future, I will implement building the server from source to support unreleased git tags
+
 You can overwrite the expected SPT version by setting the `SPT_SHA` build arg. This must correspond with a git ref (tag or branch) in the
 SPT Server github repo. This version must be a release [semver](https://semver.org/) value, or a pre-release ref like `3.11.4-dev`
 The value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot. If using a pre-release version tag,
