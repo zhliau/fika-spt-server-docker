@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
 
 RUN apt update && apt install -y --no-install-recommends \
     curl \
@@ -10,18 +10,6 @@ RUN apt update && apt install -y --no-install-recommends \
     cron \
     exiftool \
     jq
-
-# Runtime dependencies
-# Temporarily add package repo manually since GHA runners can't seem to pull it
-COPY data/packages-microsoft-prod.deb /
-#RUN curl -L  https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -o packages-microsoft-prod.deb
-RUN dpkg -i packages-microsoft-prod.deb
-#RUN rm packages-microsoft-prod.deb
-RUN apt search aspnetcore
-RUN apt-cache policy
-RUN ls -la /var/lib/apt/lists/
-
-RUN apt update && apt install -y aspnetcore-runtime-9.0
 
 ARG SPT_RELEASE_VERSION=4.0.0-40087-0582f8d
 
