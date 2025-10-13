@@ -18,6 +18,9 @@ COPY data/packages-microsoft-prod.deb /
 RUN dpkg -i packages-microsoft-prod.deb
 #RUN rm packages-microsoft-prod.deb
 RUN apt search aspnetcore
+RUN apt-cache policy
+#RUN grep Package /var/lib/apt/lists/_Packages
+
 RUN apt update && apt install -y aspnetcore-runtime-9.0
 
 ARG SPT_RELEASE_VERSION=4.0.0-40087-0582f8d
