@@ -16,7 +16,7 @@ spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 
 nodejs_spt_data_dir=$mounted_dir/SPT_Data
 spt_data_dir=$mounted_dir/SPT_Data
-spt_core_config=$nodejs_spt_data_dir/configs/core.json
+spt_core_config=$nodejs_spt_data_dir/Server/configs/core.json
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 fika_version=${FIKA_VERSION:-1.0.0}
@@ -74,13 +74,15 @@ validate() {
     if [[ -d $nodejs_spt_data_dir && -f $spt_core_config ]]; then
         existing_spt_version=$(jq -r '.sptVersion' $spt_core_config)
         if [[ $existing_spt_version != "null" && $existing_spt_version != "$spt_version" ]]; then
-            echo "  ==============="
-            echo "  === WARNING ==="
-            echo "  ==============="
+            echo "  ==================="
+            echo "  === FATAL ERROR ==="
             echo ""
-            echo "  The existing server files mounted to /opt/server appear to be from SPT Server version < 4.0.0"
-            echo "  This image is incompatible and cannot automatically update your existing server files."
+            echo "  The existing server files mounted to /opt/server appear to be from SPT Server version $existing_spt_version"
+            echo "  This image is ONLY compatible with SPT version > 4.0.0"
+            echo "  and cannot automatically update your existing server files."
             echo "  Please remove these files or mount a different empty directory and restart this container to reinstall SPT"
+            echo ""
+            echo "  ==================="
             exit 1
         fi
     fi
@@ -228,14 +230,11 @@ try_update_spt() {
     echo "  "
     echo "  ==============="
     echo "  === WARNING ==="
-    echo "  ==============="
     echo ""
     echo "  The user/ folder has been backed up to $spt_backup_dir, but otherwise has been LEFT UNTOUCHED in the server dir."
     echo "  Please verify your existing mods and profile work with this new SPT version! You may want to delete the mods directory and start from scratch"
     echo "  Restart this container to bring the server back up"
     echo ""
-    echo "  ==============="
-    echo "  === WARNING ==="
     echo "  ==============="
     exit 0
 }
