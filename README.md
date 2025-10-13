@@ -9,6 +9,11 @@ This image aims to provide a fully pre-packaged SPT Docker image with optional F
 
 That's it! The image has everything else you need to run an SPT Server, with Fika if desired.
 
+> [!WARNING]
+> With the release of SPT 4.0.0 and the rewrite to use C#, this image going forward will no longer support prior versions due to a significant change in how the image operates.
+> 
+> If you wish to use the LTS version of SPT (3.11.4), make sure you specify the image tag `fika-spt-server-docker:3.11.4` explicitly instead of using `latest`)
+
 - [🪄 Features](#-features)
 - [🥡 Releases](#-releases)
 - [🛫 Running](#-running)
@@ -35,7 +40,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:3.11.4` for SPT `3.11.4`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.0` for SPT `4.0.0`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -45,7 +50,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:3.11.4
+docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.0
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -57,7 +62,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:3.11.4
+  ghcr.io/zhliau/fika-spt-server-docker:4.0.0
 ```
 
 ### docker-compose
