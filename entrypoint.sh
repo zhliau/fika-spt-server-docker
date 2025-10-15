@@ -218,7 +218,7 @@ try_update_fika() {
 set_num_headless_profiles() {
     if [[ ${num_headless_profiles:+1} && -f $fika_mod_dir/$fika_config_path ]]; then
         echo "Setting number of headless profiles to $num_headless_profiles"
-        modified_fika_jsonc="$(jq --arg jq_num_headless_profiles $num_headless_profiles '.headless.profiles.amount=$jq_num_headless_profiles' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
+        modified_fika_jsonc="$(jq --arg jq_num_headless_profiles $num_headless_profiles '.headless.profiles.amount=($jq_num_headless_profiles | tonumber)' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
     fi
 }
 
