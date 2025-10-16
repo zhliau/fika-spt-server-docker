@@ -20,7 +20,7 @@ spt_dir=$mounted_dir/SPT
 spt_data_dir=$spt_dir/SPT_Data
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
-fika_version=${FIKA_VERSION:-1.0.0}
+fika_version=${FIKA_VERSION:-1.0.1}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
@@ -218,7 +218,7 @@ try_update_fika() {
 set_num_headless_profiles() {
     if [[ ${num_headless_profiles:+1} && -f $fika_mod_dir/$fika_config_path ]]; then
         echo "Setting number of headless profiles to $num_headless_profiles"
-        modified_fika_jsonc="$(jq --arg jq_num_headless_profiles $num_headless_profiles '.headless.profiles.amount=$jq_num_headless_profiles' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
+        modified_fika_jsonc="$(jq --arg jq_num_headless_profiles $num_headless_profiles '.headless.profiles.amount=($jq_num_headless_profiles | tonumber)' $fika_mod_dir/$fika_config_path)" && echo -E "${modified_fika_jsonc}" > $fika_mod_dir/$fika_config_path
     fi
 }
 

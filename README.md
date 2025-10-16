@@ -243,21 +243,21 @@ This should be set to a TZ Identifier (see https://en.wikipedia.org/wiki/List_of
 
 # 🌐 Environment Variables
 None of these env vars are required, but they may be useful.
-| Env var                   | Default | Description |
-| ------------------------- | ------- | ----------- |
-| `UID`                     | 1000    | The userID to use to run the server binary. This user is created in the container on runtime |
-| `GID`                     | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created |
-| `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you |
-| `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified  |
-| `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true |
-| `FIKA_VERSION`            | v2.4.8  | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server/releases/download/$FIKA_VERSION/fika-server-$FIKA_VERSION.zip` |
-| `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles |
-| `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles |
-| `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files |
-| `CHANGE_PERMISSIONS`      | true    | If this is set to false, the container will not change file permissions of the server files. Make sure the running user has permissions to access these files |
-| `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled |
-| `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces |
-| `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details |
+| Env var                   | Default | Description                                                                                                                                                                                                                               |
+| ------------------------- | ------- | -----------                                                                                                                                                                                                                               |
+| `UID`                     | 1000    | The userID to use to run the server binary. This user is created in the container on runtime                                                                                                                                              |
+| `GID`                     | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created                                                                                                   |
+| `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you                                                                                                                                                     |
+| `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified                                                                                                                                            |
+| `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true                                                                                                          |
+| `FIKA_VERSION`            | 1.0.1   | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
+| `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles                                                                                                                                                        |
+| `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles                                                                                                                                            |
+| `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files                                                                               |
+| `CHANGE_PERMISSIONS`      | true    | If this is set to false, the container will not change file permissions of the server files. Make sure the running user has permissions to access these files                                                                             |
+| `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled                                                                                                                                                    |
+| `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces                                                                                                                              |
+| `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details                                                                                                                                                                   |
 | `NUM_HEADLESS_PROFILES`   | null    | Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer. This will only work if the `fika.jsonc` config file exists, the server automatically generates one on startup if it is missing |
 
 
