@@ -11,15 +11,14 @@ RUN apt update && apt install -y --no-install-recommends \
     exiftool \
     jq
 
-ARG SPT_RELEASE_VERSION=4.0.0-40087-0582f8d
+ARG SPT_VERSION=4.0.1-40087-1eacf0f
+ARG FIKA_VERSION=1.0.2
+ENV SPT_VERSION=$SPT_VERSION
+ENV FIKA_VERSION=$FIKA_VERSION
 
 WORKDIR /opt/build
-RUN curl -sL "https://spt-releases.modd.in/SPT-${SPT_RELEASE_VERSION}.7z" -o spt.7z
+RUN curl -sL "https://spt-releases.modd.in/SPT-${SPT_VERSION}.7z" -o spt.7z
 RUN 7zz x spt.7z
-
-ARG FIKA_VERSION=1.0.1
-ENV SPT_VERSION=$SPT_RELEASE_VERSION
-ENV FIKA_VERSION=$FIKA_VERSION
 
 COPY entrypoint.sh /usr/bin/entrypoint
 COPY scripts/backup.sh /usr/bin/backup
