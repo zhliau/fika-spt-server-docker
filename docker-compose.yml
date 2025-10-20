@@ -9,6 +9,7 @@ services:
       - GID=1000
       # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
       # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
+      - SPT_VERSION=4.0.1-40087-1eacf0f
       - INSTALL_FIKA=true
       # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
       - AUTO_UPDATE_SPT=true
