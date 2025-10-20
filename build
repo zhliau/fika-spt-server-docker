@@ -1,8 +1,8 @@
 #!/bin/bash
 
 version_tag=${VERSION:-latest}
-spt_release_version=${SPT_RELEASE_VERSION:-4.0.0-40087-0582f8d}
-fika_version=${FIKA_VERSION:-1.0.1}
+spt_release_version=${SPT_VERSION:-4.0.1-40087-1eacf0f}
+fika_version=${FIKA_VERSION:-1.0.2}
 build_type=${BUILD_TYPE:-release}
 
 docker build . \
