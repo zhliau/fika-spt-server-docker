@@ -10,9 +10,12 @@ backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
 spt_current_major_version=4
-spt_version=${SPT_VERSION:-4.0.0-40087-0582f8d}
+spt_version=${SPT_VERSION:-4.0.1-40087-1eacf0f}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
+# if force spt version, ignore all version checks and disable user folder backup
+force_spt_version=${FORCE_SPT_VERSION:=}
+forced_spt_version_archive=SPT-${force_spt_version}.7z
 
 nodejs_spt_data_dir=$mounted_dir/SPT_Data
 spt_nodejs_core_config=$nodejs_spt_data_dir/Server/configs/core.json
@@ -20,7 +23,8 @@ spt_dir=$mounted_dir/SPT
 spt_data_dir=$spt_dir/SPT_Data
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
-fika_version=${FIKA_VERSION:-1.0.1}
+
+fika_version=${FIKA_VERSION:-1.0.2}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
@@ -114,7 +118,10 @@ validate() {
     if [[ -d $spt_data_dir ]]; then
         # Grab version from binary using exiftool
         existing_spt_version=$(exiftool -s -s -s -ProductVersion $spt_dir/SPT.Server.dll | cut -d '-' -f 1)
-        if [[ $existing_spt_version != "$spt_version" ]]; then
+        if [[ -n ${force_spt_version} ]]; then
+            # Force download SPT archive and install, do not backup or validate
+            force_install_spt
+        elif [[ $existing_spt_version != "$spt_version" ]]; then
             try_update_spt $existing_spt_version
         fi
 
@@ -228,7 +235,19 @@ set_num_headless_profiles() {
 install_spt() {
     # Remove the server files, since databases tend to be different between versions
     rm -rf $spt_data_dir
-    cp -r $build_dir/* $mounted_dir
+
+    # If FORCE_SPT_VERSION is set, download and override the built in version with provided version
+    # Archive stored in root mounted folder. Supports user manually supplying the release archive
+    if [[ -n ${force_spt_version} ]]; then
+        echo "Forcing SPT version to $force_spt_version"
+        # check if archive already exists, and extract if so
+        if [[ ! -f ${build_dir}/${forced_spt_version_archive} ]]; then
+            curl -sL "https://spt-releases.modd.in/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}
+        fi
+        7zz x ${forced_spt_version_archive} -o${mounted_dir} -aoa 
+    else
+        cp -r $build_dir/* $mounted_dir
+    fi
     make_and_own_spt_dirs
 }
 
@@ -236,6 +255,12 @@ install_spt() {
 backup_spt_user_dirs() {
     mkdir -p $spt_backup_dir
     cp -r $spt_dir/user $spt_backup_dir/
+}
+
+force_install_spt() {
+    echo "!! Forcing SPT version to $force_spt_version"
+    echo "!! SPT auto-update is disabled"
+    install_spt
 }
 
 try_update_spt() {
