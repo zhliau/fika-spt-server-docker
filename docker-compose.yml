@@ -9,7 +9,6 @@ services:
       - GID=1000
       # If you want to auto-install Fika on an existing Fika-less SPT Server install, set this to true.
       # Will do nothing if your serverfiles mount already has a fika-server dir in user/mods/
-      - SPT_VERSION=4.0.1-40087-1eacf0f
       - INSTALL_FIKA=true
       # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
       - AUTO_UPDATE_SPT=true
@@ -23,6 +22,10 @@ services:
       - LISTEN_ALL_NETWORKS=true
       # If you want to override the timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ codes
       # - TZ=US/Eastern
+      # If you want to override the SPT version for this container, set this variable to the version string
+      # The version should follow the release archive name format <SPT_VERSION>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>
+      - FORCE_SPT_VERSION=4.0.1-40087-1eacf0f
+
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
       - ./server:/opt/server

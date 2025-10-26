@@ -9,7 +9,6 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_current_major_version=4
 spt_version=${SPT_VERSION:-4.0.1-40087-1eacf0f}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
@@ -240,11 +239,13 @@ install_spt() {
     # Archive stored in root mounted folder. Supports user manually supplying the release archive
     if [[ -n ${force_spt_version} ]]; then
         echo "Forcing SPT version to $force_spt_version"
+        cd ${mounted_dir}
         # check if archive already exists, and extract if so
-        if [[ ! -f ${build_dir}/${forced_spt_version_archive} ]]; then
+        if [[ ! -f ${forced_spt_version_archive} ]]; then
+            echo "Downloading https://spt-releases.modd.in/SPT-${force_spt_version}.7z"
             curl -sL "https://spt-releases.modd.in/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}
         fi
-        7zz x ${forced_spt_version_archive} -o${mounted_dir} -aoa 
+        7zz x ${forced_spt_version_archive} -aoa 
     else
         cp -r $build_dir/* $mounted_dir
     fi
