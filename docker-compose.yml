@@ -24,7 +24,9 @@ services:
       # - TZ=US/Eastern
       # If you want to override the SPT version for this container, set this variable to the version string
       # The version should follow the release archive name format <SPT_VERSION>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>
-      - FORCE_SPT_VERSION=4.0.1-40087-1eacf0f
+      # user folder backups will be disabled
+      # - FORCE_SPT_VERSION=4.0.2-40087-0df4ae7
+    #
 
     volumes:
       # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install

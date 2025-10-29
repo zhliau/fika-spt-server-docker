@@ -119,7 +119,7 @@ validate() {
         existing_spt_version=$(exiftool -s -s -s -ProductVersion $spt_dir/SPT.Server.dll | cut -d '-' -f 1)
         if [[ -n ${force_spt_version} ]]; then
             # Force download SPT archive and install, do not backup or validate
-            force_install_spt
+            install_spt
         elif [[ $existing_spt_version != "$spt_version" ]]; then
             try_update_spt $existing_spt_version
         fi
@@ -238,7 +238,10 @@ install_spt() {
     # If FORCE_SPT_VERSION is set, download and override the built in version with provided version
     # Archive stored in root mounted folder. Supports user manually supplying the release archive
     if [[ -n ${force_spt_version} ]]; then
-        echo "Forcing SPT version to $force_spt_version"
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        echo "!! Forcing SPT version to $force_spt_version     !!"
+        echo "!! SPT auto-update is disabled                    !!"
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         cd ${mounted_dir}
         # check if archive already exists, and extract if so
         if [[ ! -f ${forced_spt_version_archive} ]]; then
@@ -256,12 +259,6 @@ install_spt() {
 backup_spt_user_dirs() {
     mkdir -p $spt_backup_dir
     cp -r $spt_dir/user $spt_backup_dir/
-}
-
-force_install_spt() {
-    echo "!! Forcing SPT version to $force_spt_version"
-    echo "!! SPT auto-update is disabled"
-    install_spt
 }
 
 try_update_spt() {
