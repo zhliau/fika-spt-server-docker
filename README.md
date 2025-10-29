@@ -27,6 +27,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
   * [Updating SPT/Fika versions](#updating-sptfika-versions)
     + [When Fika server mod is updated for the same SPT version](#when-fika-server-mod-is-updated-for-the-same-spt-version)
     + [When SPT updates](#when-spt-updates)
+    + [(NEW FOR SPT 4.0) Forcing SPT Version](#new-for-spt-40-forcing-spt-versions)
   * [Automatically download & install additional mods](#automatically-download--install-additional-mods)
     * [What it does](#what-it-does)
     * [How to use it](#how-to-use-it)
@@ -171,9 +172,16 @@ The image will validate that your SPT version in the serverfiles matches the ima
 > The user directory in your existing SPT server files is left untouched! Please make sure that you validate that the SPT version you are running works with your installed mods and profiles!
 > You may want to start by removing all mods and validating them one by one
 
-### Forcing SPT Versions **NEW for SPT 4.0+**
-You can also force the install of a specific SPT version by supplying the `FORCE_SPT_VERSION` environment variable on container run
+### (NEW for SPT 4.0+) Forcing SPT Versions
+You can also force the install of a specific SPT version by supplying the `FORCE_SPT_VERSION` environment variable on container run. You must set this to a valid SPT release version, formatted as `<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>`. You can find an example of this in the SPT release archive name.
+
+e.g
+```
+FORCE_SPT_VERSION=4.0.1-40087-1eacf0f
+```
+
 This will download the forced version release, and use that to update your server files.
+This will disable the SPT auto-update feature, since you will be running your container out of sync with the expected image version.
 
 ## Automatically download & install additional mods
 Instead of manually downloading and installing the other mods you want, you can have the server do it for you at boot!
@@ -263,7 +271,7 @@ None of these env vars are required, but they may be useful.
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces                                                                                                                              |
 | `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details                                                                                                                                                                   |
 | `NUM_HEADLESS_PROFILES`   | null    | Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer. This will only work if the `fika.jsonc` config file exists, the server automatically generates one on startup if it is missing |
-| `FORCE_SPT_VERSION`       | null    | Force a specific SPT version for this image. The version string should look like `SPT-<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>` e.g. `SPT-4.0.1-40087-1eacf0f`. You can see an example of this in the naming of the SPT release archive. |
+| `FORCE_SPT_VERSION`       | null    | Force a specific SPT version for this image. The version string should look like `SPT-<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>` e.g. `4.0.1-40087-1eacf0f`. You can see an example of this in the naming of the SPT release archive. |
 
 
 # 💬 FAQ
