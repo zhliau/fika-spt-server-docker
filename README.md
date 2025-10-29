@@ -271,7 +271,7 @@ None of these env vars are required, but they may be useful.
 | `LISTEN_ALL_NETWORKS`     | false   | If you want to automatically set the SPT server IP addresses to allow it to listen on all network interfaces                                                                                                                              |
 | `TZ`                      | null    | Set the desired time zone. See the `Timezone` section above for details                                                                                                                                                                   |
 | `NUM_HEADLESS_PROFILES`   | null    | Set the desired number of headless profiles for the Fika server to auto-generate. This must be an integer. This will only work if the `fika.jsonc` config file exists, the server automatically generates one on startup if it is missing |
-| `FORCE_SPT_VERSION`       | null    | Force a specific SPT version for this image. The version string should look like `SPT-<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>` e.g. `4.0.1-40087-1eacf0f`. You can see an example of this in the naming of the SPT release archive. |
+| `FORCE_SPT_VERSION`       | null    | Force a specific SPT version for this image. The version string should look like `<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>` e.g. `4.0.1-40087-1eacf0f`. You can see an example of this in the naming of the SPT release archive. |
 
 
 # 💬 FAQ
