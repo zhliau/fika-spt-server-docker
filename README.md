@@ -44,7 +44,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.0` for SPT `4.0.0`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.2` for SPT `4.0.2`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -54,7 +54,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.0
+docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.2
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -66,7 +66,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:4.0.0
+  ghcr.io/zhliau/fika-spt-server-docker:4.0.2
 ```
 
 ### docker-compose
@@ -254,7 +254,7 @@ None of these env vars are required, but they may be useful.
 | `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you                                                                                                                                                     |
 | `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified                                                                                                                                            |
 | `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true                                                                                                          |
-| `FIKA_VERSION`            | 1.0.2   | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
+| `FIKA_VERSION`            | 1.0.4   | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles                                                                                                                                                        |
 | `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles                                                                                                                                            |
 | `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files                                                                               |
