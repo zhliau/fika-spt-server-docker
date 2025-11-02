@@ -9,7 +9,7 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-4.0.2-40087-0df4ae7}
+spt_version=${SPT_VERSION:-4.0.3-40087-96c7fef}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 # if force spt version, ignore all version checks and disable user folder backup
@@ -232,11 +232,8 @@ set_num_headless_profiles() {
 # SPT #
 #######
 install_spt() {
-    # Remove the server files, since databases tend to be different between versions
-    rm -rf $spt_data_dir
-
-    # If FORCE_SPT_VERSION is set, download and override the built in version with provided version
-    # Archive stored in root mounted folder. Supports user manually supplying the release archive
+    # If FORCE_SPT_VERSION is set and archive does not exist, download and override the built in version with provided version
+    # Archive stored in root mounted folder
     if [[ -n ${force_spt_version} ]]; then
         echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         echo "!! Forcing SPT version to $force_spt_version     !!"
@@ -247,9 +244,16 @@ install_spt() {
         if [[ ! -f ${forced_spt_version_archive} ]]; then
             echo "Downloading https://spt-releases.modd.in/SPT-${force_spt_version}.7z"
             curl -sL "https://spt-releases.modd.in/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}
+            # Remove the server files, since databases tend to be different between versions
+            rm -rf $spt_data_dir
+            7zz x ${forced_spt_version_archive} -aoa 
+        else
+            echo "Version already downloaded and presumed installed. Skipping SPT installation."
+            echo "If you want to force reinstall this server version ${force_spt_version}, remove the SPT-*.7z archive in your mounted server files directory."
         fi
-        7zz x ${forced_spt_version_archive} -aoa 
     else
+        # Remove the server files, since databases tend to be different between versions
+        rm -rf $spt_data_dir
         cp -r $build_dir/* $mounted_dir
     fi
     make_and_own_spt_dirs

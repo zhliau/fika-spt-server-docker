@@ -24,8 +24,7 @@ services:
       # - TZ=US/Eastern
       # If you want to override the SPT version for this container, set this variable to the version string
       # The version should follow the release archive name format <SPT_VERSION>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>
-      # user folder backups will be disabled
-      # - FORCE_SPT_VERSION=4.0.2-40087-0df4ae7
+      #- FORCE_SPT_VERSION=4.0.1-40087-1eacf0f
     #
 
     volumes:
