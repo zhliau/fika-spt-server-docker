@@ -11,7 +11,8 @@ RUN apt update && apt install -y --no-install-recommends \
     exiftool \
     jq
 
-ARG SPT_VERSION=4.0.2-40087-0df4ae7
+
+ARG SPT_VERSION=4.0.3-40087-96c7fef
 ARG FIKA_VERSION=1.0.4
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION

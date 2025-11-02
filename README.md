@@ -45,7 +45,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.2` for SPT `4.0.2`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.3` for SPT `4.0.3`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -55,7 +55,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.2
+docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.3
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -67,7 +67,7 @@ docker run --name fika-server \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:4.0.2
+  ghcr.io/zhliau/fika-spt-server-docker:4.0.3
 ```
 
 ### docker-compose
@@ -181,7 +181,9 @@ FORCE_SPT_VERSION=4.0.1-40087-1eacf0f
 ```
 
 This will download the forced version release, and use that to update your server files.
-This will disable the SPT auto-update feature, since you will be running your container out of sync with the expected image version.
+Using this parameter will disable the SPT auto-update feature, since you will be running your container out of sync with the expected image version.
+
+The image will use the presence of the archive as the indicator that the server version has been forced by this parameter. If you wish to reinstall the server, remove the `SPT-<VERSION_NUMBER>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>.7z` archive in your serverfiles directory.
 
 ## Automatically download & install additional mods
 Instead of manually downloading and installing the other mods you want, you can have the server do it for you at boot!
