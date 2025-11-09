@@ -13,7 +13,7 @@ RUN apt update && apt install -y --no-install-recommends \
 
 
 ARG SPT_VERSION=4.0.3-40087-96c7fef
-ARG FIKA_VERSION=1.0.4
+ARG FIKA_VERSION=1.0.5
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
 
