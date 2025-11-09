@@ -12,7 +12,7 @@ RUN apt update && apt install -y --no-install-recommends \
     jq
 
 
-ARG SPT_VERSION=4.0.3-40087-96c7fef
+ARG SPT_VERSION=4.0.4-40087-b1d80b3
 ARG FIKA_VERSION=1.0.5
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
