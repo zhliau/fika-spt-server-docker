@@ -24,15 +24,15 @@ enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 
 fika_version=${FIKA_VERSION:-1.0.6}
-# Since they don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
-fika_local_SHA=$(exiftool -s -s -s -ProductVersion ./FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
-fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$spt_dir/user/mods/fika-server
 fika_artifact=Fika.Server.Release.$fika_version.zip
 fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$fika_version/$fika_artifact"
+# Since they don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
+fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
+fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
