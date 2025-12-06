@@ -28,7 +28,7 @@ mod_download_dir=$mounted_dir/$mod_download_dirname
 mod_download_remains_relative_dir=$mod_download_dirname/remains
 mod_download_remains_dir=$mounted_dir/$mod_download_remains_relative_dir
 
-plugins_mod_dir=$mounted_dir/BepInEx/plugins
+plugins_mod_dir="$(dirname "$mounted_dir")/BepInEx/plugins"
 user_mod_dir=$mounted_dir/user/mods
 
 # File for mod urls the user requests to be downloaded
