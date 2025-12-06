@@ -24,6 +24,9 @@ enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 
 fika_version=${FIKA_VERSION:-1.0.6}
+# Since they don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
+fika_local_SHA=$(exiftool -s -s -s -ProductVersion ./FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
+fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
@@ -125,11 +128,13 @@ validate() {
         fi
 
         # Validate fika version
+        # Updated this to check the SHA instead of the version, it won't look as clean in the logs, but it works.
         if [[ -d $fika_mod_dir && $install_fika == "true" ]]; then
             echo "Validating Fika version"
-            existing_fika_version=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaShared.dll | cut -d '-' -f 1 | cut -d '+' -f 1)
-            if [[ "$existing_fika_version" != $fika_version ]]; then
-                try_update_fika "$existing_fika_version"
+            if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
+                echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
+                echo "Updating Fika version to $fika_version"
+                try_update_fika
             fi
         fi
     fi
@@ -201,13 +206,13 @@ backup_fika() {
 
 try_update_fika() {
     if [[ "$auto_update_fika" != "true" ]]; then
-        echo "Fika Version mismatch: Fika install requested but existing fika mod server is v$existing_fika_version while this image expects $fika_version"
+        echo "Fika Version mismatch: Fika install requested but existing fika mod server SHA is $fika_local_SHA while this image expects $fika_remote_SHA"
         echo "If you wish to use this container to update your Fika server mod, set AUTO_UPDATE_FIKA to true"
         echo "Aborting"
         exit 1
     fi
 
-    echo "Updating Fika servermod in place, from $1 to $fika_version"
+    echo "Updating Fika servermod in place to $fika_version"
     # Backup entire fika servermod, then delete and update servermod
     backup_fika
     rm -r $fika_mod_dir
@@ -218,7 +223,7 @@ try_update_fika() {
     if [[ -f $existing_fika_config ]]; then
         cp $existing_fika_config $fika_mod_dir/$fika_config_path
     fi
-    echo "Successfully updated Fika from $1 to $fika_version"
+    echo "Successfully updated Fika to $fika_version"
 }
 
 set_num_headless_profiles() {
