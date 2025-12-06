@@ -30,8 +30,6 @@ fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$spt_dir/user/mods/fika-server
 fika_artifact=Fika.Server.Release.$fika_version.zip
 fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$fika_version/$fika_artifact"
-# Since they don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
-fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
 fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
@@ -128,14 +126,16 @@ validate() {
         fi
 
         # Validate fika version
-        # Updated this to check the SHA instead of the version, it won't look as clean in the logs, but it works.
-        if [[ -d $fika_mod_dir && $install_fika == "true" ]]; then
-            echo "Validating Fika version"
-            if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
-                echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
-                echo "Updating Fika version to $fika_version"
-                try_update_fika
-            fi
+        # Since they (fika) don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
+        # TODO: Add proper version check to validate if there is a new version available.
+            # This is essentially done by running a curl against fika github for all releases and checking for a later version than expected $fika_version
+        if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
+            fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
+        fi
+        if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
+            echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
+            echo "Updating Fika version to $fika_version"
+            try_update_fika
         fi
     fi
 }
