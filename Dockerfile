@@ -9,8 +9,8 @@ RUN apt update && apt install -y --no-install-recommends \
     vim \
     cron \
     exiftool \
-    jq
-
+    jq \
+    dos2unix
 
 ARG SPT_VERSION=4.0.6-40087-d13d2dd
 ARG FIKA_VERSION=1.0.6
@@ -19,12 +19,14 @@ ENV FIKA_VERSION=$FIKA_VERSION
 
 WORKDIR /opt/build
 RUN curl -sL "https://spt-releases.modd.in/SPT-${SPT_VERSION}.7z" -o spt.7z
-RUN 7zz x spt.7z
+# RUN 7zz x spt.7z
 
 COPY entrypoint.sh /usr/bin/entrypoint
 COPY scripts/backup.sh /usr/bin/backup
 COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
 COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
+RUN dos2unix /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt && \
+    chmod +x /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt
 
 # Docker desktop doesn't allow you to configure port mappings unless this is present
 EXPOSE 6969
