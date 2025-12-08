@@ -9,8 +9,8 @@ RUN apt update && apt install -y --no-install-recommends \
     vim \
     cron \
     exiftool \
-    jq
-
+    jq \
+    dos2unix
 
 ARG SPT_VERSION=4.0.7-40087-513f272
 ARG FIKA_VERSION=1.0.6
@@ -25,6 +25,8 @@ COPY entrypoint.sh /usr/bin/entrypoint
 COPY scripts/backup.sh /usr/bin/backup
 COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
 COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
+RUN dos2unix /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt && \
+    chmod +x /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt
 
 # Docker desktop doesn't allow you to configure port mappings unless this is present
 EXPOSE 6969
