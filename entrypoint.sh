@@ -9,7 +9,7 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-4.0.7-40087-513f272}
+spt_version=${SPT_VERSION:-4.0.8-40087-b0ea820}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 # if force spt version, ignore all version checks and disable user folder backup
