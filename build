@@ -1,7 +1,7 @@
 #!/bin/bash
 
 version_tag=${VERSION:-latest}
-spt_release_version=${SPT_VERSION:-4.0.7-40087-52602aa}
+spt_release_version=${SPT_VERSION:-4.0.8-40087-b0ea820
 fika_version=${FIKA_VERSION:-1.0.6}
 build_type=${BUILD_TYPE:-release}
 
