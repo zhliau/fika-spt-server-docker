@@ -13,7 +13,7 @@ RUN apt update && apt install -y --no-install-recommends \
     dos2unix
 
 ARG SPT_VERSION=4.0.11-40087-278e72b
-ARG FIKA_VERSION=2.0.9
+ARG FIKA_VERSION=2.1.0
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
 

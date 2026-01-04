@@ -2,7 +2,7 @@
 
 version_tag=${VERSION:-latest}
 spt_release_version=${SPT_VERSION:-4.0.11-40087-278e72b
-fika_version=${FIKA_VERSION:-2.0.9}
+fika_version=${FIKA_VERSION:-2.1.0}
 build_type=${BUILD_TYPE:-release}
 
 docker build . \
