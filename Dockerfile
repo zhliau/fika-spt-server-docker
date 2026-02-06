@@ -12,7 +12,7 @@ RUN apt update && apt install -y --no-install-recommends \
     jq \
     dos2unix
 
-ARG SPT_VERSION=4.0.11-40087-278e72b
+ARG SPT_VERSION=4.0.12-40087-b006ff9
 ARG FIKA_VERSION=2.2.0
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
@@ -31,3 +31,4 @@ RUN dos2unix /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install
 # Docker desktop doesn't allow you to configure port mappings unless this is present
 EXPOSE 6969
 ENTRYPOINT ["/usr/bin/entrypoint"]
+
