@@ -23,14 +23,14 @@ spt_data_dir=$spt_dir/SPT_Data
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 
-fika_version=${FIKA_VERSION:-2.2.0}
+fika_version=${FIKA_VERSION:-2.2.1}
 install_fika=${INSTALL_FIKA:-false}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$spt_dir/user/mods/fika-server
 fika_artifact=Fika.Server.Release.$fika_version.zip
-fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$fika_version/$fika_artifact"
-fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
+fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/$fika_version/$fika_artifact"
+fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
 auto_update_fika=${AUTO_UPDATE_FIKA:-false}
