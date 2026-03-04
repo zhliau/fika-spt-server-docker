@@ -1,0 +1,99 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get tag and version info
+        id: tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+          # Try to get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 ${GITHUB_REF}^ 2>/dev/null || echo "")
+          echo "previous_tag=${PREV_TAG}" >> $GITHUB_OUTPUT
+
+          # Extract SPT version from entrypoint.sh
+          SPT_VERSION=$(grep 'spt_version=\${SPT_VERSION:-' entrypoint.sh | sed 's/.*:-\(.*\)}/\1/')
+          echo "spt_version=${SPT_VERSION}" >> $GITHUB_OUTPUT
+
+          # Extract Fika version from entrypoint.sh
+          FIKA_VERSION=$(grep 'fika_version=\${FIKA_VERSION:-' entrypoint.sh | sed 's/.*:-\(.*\)}/\1/')
+          echo "fika_version=${FIKA_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          CURRENT_TAG="${{ steps.tag.outputs.tag }}"
+          PREVIOUS_TAG="${{ steps.tag.outputs.previous_tag }}"
+          SPT_VERSION="${{ steps.tag.outputs.spt_version }}"
+          FIKA_VERSION="${{ steps.tag.outputs.fika_version }}"
+
+          # Create changelog
+          cat > CHANGELOG.md << EOF
+          ## 🎮 SPT Version: ${SPT_VERSION}
+          ## 🔧 Fika Version: ${FIKA_VERSION}
+
+          ## 📦 Docker Image
+
+          \`\`\`bash
+          docker pull ghcr.io/zhliau/fika-spt-server-docker:${CURRENT_TAG}
+          docker pull ghcr.io/zhliau/fika-spt-server-docker:latest
+          \`\`\`
+
+          ## 📝 Changes
+
+          EOF
+
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "### Commits since ${PREVIOUS_TAG}" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" ${PREVIOUS_TAG}..HEAD >> CHANGELOG.md
+          else
+            echo "### All commits" >> CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            git log --pretty=format:"- %s ([%h](https://github.com/${{ github.repository }}/commit/%H))" >> CHANGELOG.md
+          fi
+
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## 🚀 Quick Start" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "\`\`\`yaml" >> CHANGELOG.md
+          echo "services:" >> CHANGELOG.md
+          echo "  fika-server:" >> CHANGELOG.md
+          echo "    image: ghcr.io/zhliau/fika-spt-server-docker:${CURRENT_TAG}" >> CHANGELOG.md
+          echo "    environment:" >> CHANGELOG.md
+          echo "      - FIKA_MODE=auto-update" >> CHANGELOG.md
+          echo "      - LISTEN_ALL_NETWORKS=true" >> CHANGELOG.md
+          echo "    volumes:" >> CHANGELOG.md
+          echo "      - ./server:/opt/server" >> CHANGELOG.md
+          echo "    ports:" >> CHANGELOG.md
+          echo "      - 6969:6969" >> CHANGELOG.md
+          echo "\`\`\`" >> CHANGELOG.md
+
+          cat CHANGELOG.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: false
+          body_path: CHANGELOG.md
+          name: "Release ${{ steps.tag.outputs.tag }} (SPT ${{ steps.tag.outputs.spt_version }})"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
