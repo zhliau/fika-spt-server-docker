@@ -9,7 +9,7 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-4.0.12-40087-b006ff9}
+spt_version=${SPT_VERSION:-4.0.13-40087-2891fd4}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 # if force spt version, ignore all version checks and disable user folder backup
@@ -24,7 +24,7 @@ enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
 
 
 fika_version=${FIKA_VERSION:-2.2.1}
-install_fika=${INSTALL_FIKA:-false}
+fika_mode=${FIKA_MODE:-disabled}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$spt_dir/user/mods/fika-server
@@ -33,7 +33,30 @@ fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/do
 fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
-auto_update_fika=${AUTO_UPDATE_FIKA:-false}
+
+# Backwards compatibility for deprecated variables
+install_fika=${INSTALL_FIKA:-}
+auto_update_fika=${AUTO_UPDATE_FIKA:-}
+
+if [[ -n "${INSTALL_FIKA}" || -n "${AUTO_UPDATE_FIKA}" ]]; then
+    echo "=========================================="
+    echo "WARNING: INSTALL_FIKA and AUTO_UPDATE_FIKA are deprecated."
+    echo "Please use FIKA_MODE instead. See README for details."
+    echo "=========================================="
+
+    # Map old variables to new FIKA_MODE
+    if [[ "${AUTO_UPDATE_FIKA}" == "true" ]]; then
+        fika_mode="auto-update"
+        echo "Mapping AUTO_UPDATE_FIKA=true to FIKA_MODE=auto-update"
+    elif [[ "${INSTALL_FIKA}" == "true" ]]; then
+        fika_mode="install"
+        echo "Mapping INSTALL_FIKA=true to FIKA_MODE=install"
+    else
+        fika_mode="disabled"
+        echo "Mapping to FIKA_MODE=disabled"
+    fi
+    echo "=========================================="
+fi
 
 take_ownership=${TAKE_OWNERSHIP:-true}
 change_permissions=${CHANGE_PERMISSIONS:-true}
@@ -125,18 +148,38 @@ validate() {
             try_update_spt $existing_spt_version
         fi
 
-        # Validate fika version
+        # Validate fika version based on FIKA_MODE
         # Since they (fika) don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
         # TODO: Add proper version check to validate if there is a new version available.
             # This is essentially done by running a curl against fika github for all releases and checking for a later version than expected $fika_version
-        if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
-            fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
-        fi
-        if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
-            echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
-            echo "Updating Fika version to $fika_version"
-            try_update_fika
-        fi
+        case "$fika_mode" in
+            custom)
+                echo "Skipping Fika validation (FIKA_MODE=custom)"
+                ;;
+            install|auto-update)
+                if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
+                    fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
+                fi
+                if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
+                    echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
+                    if [[ "$fika_mode" == "auto-update" ]]; then
+                        echo "Auto-updating Fika version to $fika_version"
+                        try_update_fika
+                    else
+                        echo "Fika version mismatch detected. Set FIKA_MODE=auto-update to enable automatic updates."
+                        echo "Aborting"
+                        exit 1
+                    fi
+                fi
+                ;;
+            disabled)
+                # No validation needed when Fika is disabled
+                ;;
+            *)
+                echo "Invalid FIKA_MODE: $fika_mode. Valid options are: disabled, install, auto-update, custom"
+                exit 1
+                ;;
+        esac
     fi
 }
 
@@ -205,13 +248,6 @@ backup_fika() {
 }
 
 try_update_fika() {
-    if [[ "$auto_update_fika" != "true" ]]; then
-        echo "Fika Version mismatch: Fika install requested but existing fika mod server SHA is $fika_local_SHA while this image expects $fika_remote_SHA"
-        echo "If you wish to use this container to update your Fika server mod, set AUTO_UPDATE_FIKA to true"
-        echo "Aborting"
-        exit 1
-    fi
-
     echo "Updating Fika servermod in place to $fika_version"
     # Backup entire fika servermod, then delete and update servermod
     backup_fika
@@ -251,7 +287,7 @@ install_spt() {
             curl -sL "https://spt-releases.modd.in/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}
             # Remove the server files, since databases tend to be different between versions
             rm -rf $spt_data_dir
-            7zz x ${forced_spt_version_archive} -aoa 
+            7zz x ${forced_spt_version_archive} -aoa
         else
             echo "Version already downloaded and presumed installed. Skipping SPT installation."
             echo "If you want to force reinstall this server version ${force_spt_version}, remove the SPT-*.7z archive in your mounted server files directory."
@@ -335,15 +371,26 @@ if [[ "$enable_spt_listen_on_all_networks" == "true" ]]; then
     spt_listen_on_all_networks
 fi
 
-# Install fika if requested. Run each boot to support installing in existing serverfiles that don't have fika installed
-if [[ "$install_fika" == "true" ]]; then
-    if [[ ! -d $fika_mod_dir ]]; then
-        echo "No Fika server mod detected and install was requested. Beginning installation."
-        install_fika_mod
-    else 
-        echo "Fika install requested but Fika server mod dir already exists, skipping Fika installation"
-    fi
-fi
+# Install fika based on FIKA_MODE. Run each boot to support installing in existing serverfiles that don't have fika installed
+case "$fika_mode" in
+    install|auto-update)
+        if [[ ! -d $fika_mod_dir ]]; then
+            echo "No Fika server mod detected (FIKA_MODE=$fika_mode). Beginning installation."
+            install_fika_mod
+        else
+            echo "Fika server mod already exists, skipping installation"
+        fi
+        ;;
+    custom)
+        if [[ ! -d $fika_mod_dir ]]; then
+            echo "WARNING: FIKA_MODE=custom but no Fika server mod found at $fika_mod_dir"
+            echo "Please manually install your custom Fika build to this directory"
+        fi
+        ;;
+    disabled)
+        # No installation needed
+        ;;
+esac
 
 set_num_headless_profiles
 

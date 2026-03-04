@@ -85,7 +85,7 @@ check_requested_urls() {
     if [ ! -z "${MOD_URLS_TO_DOWNLOAD}" ]; then
         # Create the downloaded mods file it if it does not exist. Does nothing if it already exists.
         touch $mod_urls_downloaded_filepath
-        
+
         for url in $MOD_URLS_TO_DOWNLOAD; do
             check_url_and_queue_to_download $url
         done
@@ -113,7 +113,7 @@ download_new_urls() {
     if [ -f "$new_urls_to_download_filepath"  ] && [ ! -z "$(cat ${new_urls_to_download_filepath})" ]; then
         mkdir -p $tmp_downloaded_dir
         echo "  Finished compiling url download list. Starting downloads" | tee -a $download_unzip_install_logs_filepath
-        
+
         aria2c -q --content-disposition-default-utf8 true \
         --input-file=$new_urls_to_download_filepath \
         --dir=$tmp_downloaded_dir \
@@ -219,17 +219,17 @@ move_extracted_files() {
     cp -rf $tmp_extracted_dir/BepInEx/Plugins/* $plugins_mod_dir 2> /dev/null
     rm -rf $tmp_extracted_dir/BepInEx 2> /dev/null
 
-    # Copy the user/mods directory to where it needs to go and the cleanup 
+    # Copy the user/mods directory to where it needs to go and the cleanup
     cp -rf $tmp_extracted_dir/SPT/* $mounted_dir 2> /dev/null
     rm -rf $tmp_extracted_dir/SPT 2> /dev/null
 
     # Move any txt or md files (usually with licenses and readme's) and executables (like ModSync and SVM) to the parent directory
     cp $tmp_extracted_dir/*.txt $mounted_dir 2> /dev/null
     rm $tmp_extracted_dir/*.txt 2> /dev/null
-    
+
     cp $tmp_extracted_dir/*.md $mounted_dir 2> /dev/null
     rm $tmp_extracted_dir/*.md 2> /dev/null
-    
+
     cp $tmp_extracted_dir/*.exe $mounted_dir 2> /dev/null
     rm $tmp_extracted_dir/*.exe 2> /dev/null
 }

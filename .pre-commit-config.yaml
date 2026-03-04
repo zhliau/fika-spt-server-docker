@@ -1,0 +1,23 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim trailing whitespace
+        description: Trims trailing whitespace from files
+      - id: end-of-file-fixer
+        name: Fix end of files
+        description: Ensures files end with a newline
+      - id: check-yaml
+        name: Check YAML syntax
+        description: Checks yaml files for parseable syntax
+      - id: check-added-large-files
+        name: Check for large files
+        description: Prevents giant files from being committed
+        args: ['--maxkb=1000']
+      - id: mixed-line-ending
+        name: Fix mixed line endings
+        description: Ensures consistent line endings (LF)
+        args: ['--fix=lf']
