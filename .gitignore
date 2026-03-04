@@ -1,0 +1,5 @@
+# Python virtual environment
+.venv/
+
+# Pre-commit cache
+.pre-commit-cache/

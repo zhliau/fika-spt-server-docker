@@ -11,7 +11,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 > [!WARNING]
 > With the release of SPT 4.0.0 and the rewrite to use C#, this image going forward will no longer support prior versions due to a significant change in how the image operates.
-> 
+>
 > If you wish to use the LTS version of SPT (3.11.4), make sure you specify the image tag `fika-spt-server-docker:3.11.4` explicitly instead of using `latest`)
 
 > [!WARNING]
@@ -45,7 +45,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 
 # 🪄 Features
-- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.12` for SPT `4.0.12`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.13` for SPT `4.0.13`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -55,7 +55,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 # 🥡 Releases
 The image build is triggered off release tags and hosted on ghcr
 ```
-docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.12
+docker pull ghcr.io/zhliau/fika-spt-server-docker:4.0.13
 ```
 Check the pane on the right for the different version tags available, if you don't want to use the latest SPT release.
 
@@ -63,11 +63,11 @@ Check the pane on the right for the different version tags available, if you don
 ### docker
 ```
 docker run --name fika-server \
-  -e INSTALL_FIKA=true \
+  -e FIKA_MODE=install \
   -e LISTEN_ALL_NETWORKS=true \
   -v /path/to/server/files:/opt/server \
   -p 6969:6969 \
-  ghcr.io/zhliau/fika-spt-server-docker:4.0.12
+  ghcr.io/zhliau/fika-spt-server-docker:4.0.13
 ```
 
 ### docker-compose
@@ -79,7 +79,7 @@ services:
   fika-server:
     image: ghcr.io/zhliau/fika-spt-server-docker:latest
     environment:
-      - INSTALL_FIKA=true
+      - FIKA_MODE=install
       # This will automatically set SPT server's configs to work in a containerized environment
       - LISTEN_ALL_NETWORKS=true
     ports:
@@ -103,7 +103,7 @@ services:
       - GID=1000
 ```
 
-If you want to automatically install Fika, set `INSTALL_FIKA` to `true`
+If you want to automatically install Fika, set `FIKA_MODE` appropriately:
 ```yaml
 services:
   fika-server:
@@ -111,7 +111,9 @@ services:
     # ...
     environment:
       # ...
-      - INSTALL_FIKA=true
+      - FIKA_MODE=install        # Install Fika and validate version (exit on mismatch)
+      # OR
+      - FIKA_MODE=auto-update    # Install Fika and auto-update on version mismatch
 ```
 
 ## Using an existing installation
@@ -121,8 +123,8 @@ services:
 If you want to migrate to this docker image with an existing SPT install:
 - Set your volume mount to your existing SPT server directory (the dir containing the SPT.Server.exe file)
 - If these existing server files were from a Windows installation, **delete** the `SPT.Server.exe` file to have the container use its own Linux-compiled binary
-- If you don't have Fika yet, you can provide a `INSTALL_FIKA` env var to tell the container to install the server mod for you
-- Run the container, optionally specify if you want the container to auto update the SPT server files or fika server mod via the `AUTO_UPDATE_SPT` and `AUTO_UPDATE_FIKA` env vars
+- If you don't have Fika yet, you can set `FIKA_MODE=install` or `FIKA_MODE=auto-update` to tell the container to install the server mod for you
+- Run the container, optionally specify if you want the container to auto update the SPT server files via the `AUTO_UPDATE_SPT` env var
 
 ## Updating SPT/Fika versions
 This image comes built with a copy of SPT Server, versioned by the image's version tag.
@@ -136,8 +138,7 @@ services:
     environment:
       # ...
       - AUTO_UPDATE_SPT=true
-      - AUTO_UPDATE_FIKA=true
-      - INSTALL_FIKA=true # Required if you want to auto-update Fika server mod too
+      - FIKA_MODE=auto-update # Auto-update Fika server mod when version mismatches
 ```
 
 ### When Fika server mod is updated for the same SPT version
@@ -261,12 +262,13 @@ None of these env vars are required, but they may be useful.
 | ------------------------- | ------- | -----------                                                                                                                                                                                                                               |
 | `UID`                     | 1000    | The userID to use to run the server binary. This user is created in the container on runtime                                                                                                                                              |
 | `GID`                     | 1000    | The groupID to assign when creating the user running the server binary. This has no effect if no UID is provided and no user is created                                                                                                   |
-| `INSTALL_FIKA`            | false   | Whether you want the container to automatically install/update fika servermod for you                                                                                                                                                     |
+| `FIKA_MODE`               | disabled | Controls Fika installation and updates. Options: `disabled` (no Fika), `install` (install and validate, exit on mismatch), `auto-update` (install and auto-update on mismatch), `custom` (skip validation for custom builds)              |
 | `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified                                                                                                                                            |
 | `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true                                                                                                          |
 | `FIKA_VERSION`            | 2.2.1   | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles                                                                                                                                                        |
-| `AUTO_UPDATE_FIKA`        | false   | Whether you want the container to handle updating Fika server mod in your existing serverfiles                                                                                                                                            |
+| ~~`INSTALL_FIKA`~~        | false   | **DEPRECATED:** Use `FIKA_MODE` instead. Set to `install` or `auto-update`                                                                                                                                                                |
+| ~~`AUTO_UPDATE_FIKA`~~    | false   | **DEPRECATED:** Use `FIKA_MODE=auto-update` instead                                                                                                                                                                                       |
 | `TAKE_OWNERSHIP`          | true    | If this is set to false, the container will not change file ownership of the server files. Make sure the running user has permissions to access these files                                                                               |
 | `CHANGE_PERMISSIONS`      | true    | If this is set to false, the container will not change file permissions of the server files. Make sure the running user has permissions to access these files                                                                             |
 | `ENABLE_PROFILE_BACKUP`   | true    | If this is set to false, the cron job that handles profile backups will not be enabled                                                                                                                                                    |
@@ -283,7 +285,15 @@ If none are provided, it defaults to uid 0 which is the root user.
 Running the server with root will mean anything the server writes out is created by the root user.
 
 ### Can I use this without Fika?
-Yes! Simply set `INSTALL_FIKA` to `false` and the container will act as an ordinary SPT server container. Everything else including the autoupdate capability for SPT remains unchanged.
+Yes! Either don't set `FIKA_MODE` (it defaults to `disabled`) or explicitly set `FIKA_MODE=disabled`. The container will act as an ordinary SPT server container. Everything else including the autoupdate capability for SPT remains unchanged.
+
+### Can I use custom Fika builds?
+Yes! If you want to use a custom or modified Fika build instead of the official releases:
+
+1. Set `FIKA_MODE=custom` to prevent the container from validating or updating your Fika installation
+2. Manually place your custom Fika build in the `SPT/user/mods/fika-server` directory
+
+The container will skip all Fika version checks and use whatever version you've manually installed.
 
 ### I am running this container on Linux, why does the server output show errors regarding Windows-like paths? e.g. `C:\snapshot\...`.
 If you are reusing an existing SPT server that was previously running on Windows, you will need to delete the contents of your `/user/cache` folder.
@@ -305,6 +315,30 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 ```
 
 # 💻 Development
+
+### Pre-commit Hooks
+This project uses pre-commit hooks to maintain code quality. The hooks automatically:
+- Remove trailing whitespace
+- Fix end of file issues
+- Check YAML syntax
+- Prevent large files from being committed
+- Fix mixed line endings
+
+To set up pre-commit hooks:
+```bash
+# Create a virtual environment and install pre-commit
+python -m venv .venv
+.venv/bin/pip install pre-commit
+
+# Install the git hooks
+.venv/bin/pre-commit install
+
+# Run on all files to verify
+.venv/bin/pre-commit run --all-files
+```
+
+Once installed, the hooks will run automatically on every commit.
+
 ### Building
 > [!WARNING]
 > As of SPT version 4.0.0, these instructions are deprecated because we use precompiled server binaries
