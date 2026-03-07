@@ -1,0 +1,97 @@
+# Multi-architecture Dockerfile that compiles SPT from source for ARM64 and AMD64
+# Stage 1: Build SPT Server from source
+FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS builder
+
+ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG TARGETARCH
+ARG SPT_BUILD_TYPE=RELEASE
+ARG SPT_BUILD_CONFIG=Release
+
+WORKDIR /tmp
+
+# Install git, git-lfs and other build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    git-lfs \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone SPT Server C# repository and checkout the specified version
+# Extract version number and git SHA from the version string (format: VERSION-BUILD-SHA)
+RUN SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
+    SPT_SHA=$(echo ${SPT_VERSION} | cut -d'-' -f3) && \
+    git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tarkov/server-csharp.git spt && \
+    cd spt && \
+    git lfs pull
+
+WORKDIR /tmp/spt
+
+# Build SPT Server for the target architecture
+# Map TARGETARCH (amd64/arm64) to .NET runtime identifiers (linux-x64/linux-arm64)
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        DOTNET_RID="linux-x64"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        DOTNET_RID="linux-arm64"; \
+    else \
+        echo "Unsupported architecture: $TARGETARCH"; exit 1; \
+    fi && \
+    SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
+    dotnet publish ./SPTarkov.Server/SPTarkov.Server.csproj \
+        -c ${SPT_BUILD_CONFIG} \
+        -f net9.0 \
+        -r ${DOTNET_RID} \
+        -p:IncludeNativeLibrariesForSelfExtract=true \
+        --self-contained false \
+        -p:SptBuildType=${SPT_BUILD_TYPE} \
+        -p:SptVersion=${SPT_VERSION_NUM} \
+        -p:SptBuildTime=$(date +%Y%m%d) \
+        -p:SptCommit=$(git rev-parse --short HEAD) \
+        -p:IsPublish=true
+
+# Clean up PDB files and move to final location
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        DOTNET_RID="linux-x64"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        DOTNET_RID="linux-arm64"; \
+    fi && \
+    rm -f SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/${DOTNET_RID}/publish/*.pdb && \
+    mkdir -p /opt/build && \
+    mv SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/${DOTNET_RID}/publish/* /opt/build/
+
+# Stage 2: Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+
+RUN apt update && apt install -y --no-install-recommends \
+    curl \
+    aria2 \
+    ca-certificates \
+    unzip \
+    7zip \
+    vim \
+    cron \
+    exiftool \
+    jq \
+    dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG FIKA_VERSION=2.2.1
+ENV SPT_VERSION=$SPT_VERSION
+ENV FIKA_VERSION=$FIKA_VERSION
+
+WORKDIR /opt/build
+
+# Copy the compiled SPT Server from builder stage
+COPY --from=builder /opt/build ./
+
+COPY entrypoint.sh /usr/bin/entrypoint
+COPY scripts/backup.sh /usr/bin/backup
+COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
+COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
+RUN dos2unix /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt && \
+    chmod +x /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt
+
+# Docker desktop doesn't allow you to configure port mappings unless this is present
+EXPOSE 6969
+ENTRYPOINT ["/usr/bin/entrypoint"]
