@@ -1,6 +1,8 @@
-name: Docker Multi-Architecture Build
+name: Docker Multi-Architecture Build (Hybrid)
 
-# This workflow builds and publishes multi-architecture Docker images (amd64 and arm64)
+# This workflow builds multi-architecture images using a hybrid approach:
+# - AMD64: Uses pre-compiled binaries from official releases (fast)
+# - ARM64: Compiles from source (necessary for ARM support)
 
 on:
   push:
@@ -32,17 +34,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Get latest SPT version
-        id: spt-version
-        run: |
-          # Make script executable
-          chmod +x ./scripts/get-spt-version.sh
-
-          # Get the latest SPT version string
-          SPT_VERSION=$(./scripts/get-spt-version.sh latest)
-          echo "spt_version=${SPT_VERSION}" >> $GITHUB_OUTPUT
-          echo "Latest SPT version: ${SPT_VERSION}"
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -101,7 +92,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            SPT_VERSION=${{ steps.spt-version.outputs.spt_version }}
+            SPT_VERSION=${{ vars.SPT_VERSION || '4.0.13-40087-2891fd4' }}
             FIKA_VERSION=${{ vars.FIKA_VERSION || '2.2.1' }}
 
       # Sign the resulting Docker image digest except on PRs.
