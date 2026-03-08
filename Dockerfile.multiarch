@@ -1,0 +1,128 @@
+# Hybrid multi-architecture Dockerfile
+# - AMD64: Uses pre-compiled binaries from official releases (fast)
+# - ARM64: Compiles from source (necessary for ARM support)
+
+# Stage 1: Download pre-compiled binaries for AMD64 OR build from source for ARM64
+FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS builder
+
+ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG TARGETARCH
+ARG SPT_BUILD_TYPE=RELEASE
+ARG SPT_BUILD_CONFIG=Release
+
+WORKDIR /tmp
+
+# Install dependencies (different tools needed for each arch)
+RUN apt-get update && \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+        apt-get install -y --no-install-recommends curl ca-certificates p7zip-full; \
+    else \
+        apt-get install -y --no-install-recommends curl ca-certificates git git-lfs; \
+    fi && \
+    rm -rf /var/lib/apt/lists/*
+
+# Step 1: Download or clone based on architecture
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        echo "=== AMD64: Downloading pre-compiled binaries ===" && \
+        curl -sL "https://spt-releases.modd.in/SPT-${SPT_VERSION}.7z" -o spt.7z; \
+    else \
+        echo "=== ARM64: Cloning source repository ===" && \
+        SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
+        echo "Cloning branch: ${SPT_VERSION_NUM}" && \
+        git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tarkov/server-csharp.git spt; \
+    fi
+
+# Step 2: Extract (AMD64) or pull LFS files (ARM64)
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        echo "=== AMD64: Extracting archive ===" && \
+        7zr x spt.7z; \
+    else \
+        echo "=== ARM64: Pulling LFS files ===" && \
+        cd spt && \
+        git lfs pull && \
+        cd ..; \
+    fi
+
+# Step 3: Build (ARM64 only)
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        echo "=== ARM64: Building SPT ===" && \
+        SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
+        cd spt && \
+        dotnet publish ./SPTarkov.Server/SPTarkov.Server.csproj \
+            -c ${SPT_BUILD_CONFIG} \
+            -f net9.0 \
+            -r linux-arm64 \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            --self-contained false \
+            -p:SptBuildType=${SPT_BUILD_TYPE} \
+            -p:SptVersion=${SPT_VERSION_NUM} \
+            -p:SptBuildTime=$(date +%Y%m%d) \
+            -p:SptCommit=$(git rev-parse --short HEAD) \
+            -p:IsPublish=true && \
+        cd ..; \
+    fi
+
+# Step 4: Move files to /opt/build
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        echo "=== AMD64: Moving extracted files ===" && \
+        mkdir -p /opt/build && \
+        mv SPT/* /opt/build/; \
+    else \
+        echo "=== ARM64: Moving compiled files ===" && \
+        mkdir -p /opt/build && \
+        rm -f spt/SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/linux-arm64/publish/*.pdb && \
+        mv spt/SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/linux-arm64/publish/* /opt/build/; \
+    fi
+
+# Step 5: Cleanup
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        echo "=== AMD64: Cleanup ===" && \
+        rm -rf SPT spt.7z; \
+    else \
+        echo "=== ARM64: Cleanup ===" && \
+        rm -rf spt; \
+    fi
+
+# Stage 2: Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+
+RUN apt update && apt install -y --no-install-recommends \
+    curl \
+    aria2 \
+    ca-certificates \
+    unzip \
+    7zip \
+    vim \
+    cron \
+    exiftool \
+    jq \
+    dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG FIKA_VERSION=2.2.1
+ARG TARGETARCH
+ENV SPT_VERSION=$SPT_VERSION
+ENV FIKA_VERSION=$FIKA_VERSION
+
+WORKDIR /opt/build
+
+# Copy the SPT Server binaries (either downloaded or compiled)
+COPY --from=builder /opt/build ./
+
+# Add build metadata as labels
+LABEL org.opencontainers.image.title="Fika SPT Server"
+LABEL org.opencontainers.image.description="SPT Server with Fika support (${TARGETARCH})"
+LABEL spt.version="${SPT_VERSION}"
+LABEL spt.build.method="${TARGETARCH}"
+
+COPY entrypoint.sh /usr/bin/entrypoint
+COPY scripts/backup.sh /usr/bin/backup
+COPY scripts/download_unzip_install_mods.sh /usr/bin/download_unzip_install_mods
+COPY data/cron/cron_backup_spt /etc/cron.d/cron_backup_spt
+RUN dos2unix /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt && \
+    chmod +x /usr/bin/entrypoint /usr/bin/backup /usr/bin/download_unzip_install_mods /etc/cron.d/cron_backup_spt
+
+# Docker desktop doesn't allow you to configure port mappings unless this is present
+EXPOSE 6969
+ENTRYPOINT ["/usr/bin/entrypoint"]

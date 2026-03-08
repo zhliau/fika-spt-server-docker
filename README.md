@@ -46,6 +46,7 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 
 # 🪄 Features
 - 📦 Prepackaged images versioned by SPT version e.g. `fika-spt-server-docker:4.0.13` for SPT `4.0.13`. Images are hosted in ghcr and come prebuilt with a working SPT server binary, and the latest compatible Fika servermod is downloaded and installed on container startup if enabled.
+- 🏗️ Multi-architecture support: Native builds for both AMD64 and ARM64 (Raspberry Pi, Apple Silicon, etc.)
 - ♻️ Reuse an existing installation of SPT! Just mount your existing SPT server folder
 - 💾 Automatic profile backups by default! Profiles are copied to a backup folder every day at 00:00 UTC
 - 🔒 Configurable running user and ownership of server files. Control file ownership from the host, or let the container set ownership and permissions to ease permissions issues.
@@ -315,6 +316,12 @@ This will change the values of `ip` and `backendIp` in `SPT_Data/Server/configs/
 ```
 
 # 💻 Development
+
+### Version Automation
+
+This project includes automated version tracking for SPT and Fika
+
+The GitHub Actions workflow automatically checks for new versions daily and creates PRs when updates are available.
 
 ### Pre-commit Hooks
 This project uses pre-commit hooks to maintain code quality. The hooks automatically:
