@@ -87,11 +87,11 @@ jobs:
 
           # Determine action
           if [ "$SPT_UPDATED" = "true" ]; then
-            echo "action=create_pr" >> $GITHUB_OUTPUT
+            echo "action=update_spt" >> $GITHUB_OUTPUT
             echo "Action: Create PR for SPT update"
           elif [ "$FIKA_UPDATED" = "true" ]; then
-            echo "action=auto_update_fika" >> $GITHUB_OUTPUT
-            echo "Action: Auto-update Fika only"
+            echo "action=update_fika" >> $GITHUB_OUTPUT
+            echo "Action: Update Fika only"
           else
             echo "action=none" >> $GITHUB_OUTPUT
             echo "Action: No updates needed"
@@ -101,13 +101,13 @@ jobs:
       # Path 1: SPT Update - Create PR
       # ========================================
       - name: Update versions (SPT change)
-        if: steps.check.outputs.action == 'create_pr'
+        if: steps.check.outputs.action == 'update_spt'
         run: |
           chmod +x ./update-version.sh
           ./update-version.sh
 
       - name: Create Pull Request for SPT update
-        if: steps.check.outputs.action == 'create_pr'
+        if: steps.check.outputs.action == 'update_spt'
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: |
@@ -152,10 +152,10 @@ jobs:
             automated
 
       # ========================================
-      # Path 2: Fika-Only Update - Auto-update
+      # Path 2: Fika-Only Update
       # ========================================
       - name: Archive current version (Fika update)
-        if: steps.check.outputs.action == 'auto_update_fika'
+        if: steps.check.outputs.action == 'update_fika'
         run: |
           SPT_VERSION="${{ steps.current.outputs.spt_version }}"
           CURRENT_FIKA="${{ steps.current.outputs.fika }}"
@@ -174,7 +174,7 @@ jobs:
           fi
 
       - name: Update Fika version files
-        if: steps.check.outputs.action == 'auto_update_fika'
+        if: steps.check.outputs.action == 'update_fika'
         run: |
           NEW_FIKA="${{ steps.latest.outputs.fika }}"
 
@@ -184,7 +184,7 @@ jobs:
           sed -i "s/^fika_version=\${FIKA_VERSION:-.*}/fika_version=\${FIKA_VERSION:-${NEW_FIKA}}/" entrypoint.sh
 
       - name: Commit and push Fika update
-        if: steps.check.outputs.action == 'auto_update_fika'
+        if: steps.check.outputs.action == 'update_fika'
         run: |
           SPT_VERSION="${{ steps.current.outputs.spt_version }}"
           NEW_FIKA="${{ steps.latest.outputs.fika }}"
@@ -203,7 +203,7 @@ jobs:
           git push
 
       - name: Update SPT version tag (Fika update)
-        if: steps.check.outputs.action == 'auto_update_fika'
+        if: steps.check.outputs.action == 'update_fika'
         run: |
           SPT_VERSION="${{ steps.current.outputs.spt_version }}"
           NEW_FIKA="${{ steps.latest.outputs.fika }}"
@@ -222,7 +222,7 @@ jobs:
       # Summary
       # ========================================
       - name: Summary - SPT Update
-        if: steps.check.outputs.action == 'create_pr'
+        if: steps.check.outputs.action == 'update_spt'
         run: |
           echo "## 📦 SPT Update PR Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -231,8 +231,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "A PR has been created for review. After merging, tag as \`${{ steps.latest.outputs.spt_version }}\`" >> $GITHUB_STEP_SUMMARY
 
-      - name: Summary - Fika Auto-Update
-        if: steps.check.outputs.action == 'auto_update_fika'
+      - name: Summary - Fika Update
+        if: steps.check.outputs.action == 'update_fika'
         run: |
           echo "## 🤖 Fika Auto-Updated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

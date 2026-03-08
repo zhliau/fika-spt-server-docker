@@ -13,11 +13,13 @@ ARG SPT_BUILD_CONFIG=Release
 WORKDIR /tmp
 
 # Install dependencies (different tools needed for each arch)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    $(if [ "$TARGETARCH" = "amd64" ]; then echo "p7zip-full"; else echo "git git-lfs"; fi) \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+        apt-get install -y --no-install-recommends curl ca-certificates p7zip-full; \
+    else \
+        apt-get install -y --no-install-recommends curl ca-certificates git git-lfs; \
+    fi && \
+    rm -rf /var/lib/apt/lists/*
 
 # AMD64: Download and extract pre-compiled binaries
 # ARM64: Clone repo and compile from source
