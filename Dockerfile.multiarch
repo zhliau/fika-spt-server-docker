@@ -24,12 +24,15 @@ RUN apt-get update && \
 # Step 1: Download or clone based on architecture
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "=== AMD64: Downloading pre-compiled binaries ===" && \
-        curl -sL "https://spt-releases.modd.in/SPT-${SPT_VERSION}.7z" -o spt.7z; \
+        echo "Downloading SPT-${SPT_VERSION}.7z" && \
+        curl -fSL "https://spt-releases.modd.in/SPT-${SPT_VERSION}.7z" -o spt.7z && \
+        ls -lh spt.7z; \
     else \
         echo "=== ARM64: Cloning source repository ===" && \
         SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
         echo "Cloning branch: ${SPT_VERSION_NUM}" && \
-        git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tarkov/server-csharp.git spt; \
+        git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tarkov/server-csharp.git spt && \
+        ls -la spt/; \
     fi
 
 # Step 2: Extract (AMD64) or pull LFS files (ARM64)
@@ -46,19 +49,25 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 # Step 3: Build (ARM64 only)
 RUN if [ "$TARGETARCH" = "arm64" ]; then \
         echo "=== ARM64: Building SPT ===" && \
-        SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
         cd spt && \
+        SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
+        SPT_COMMIT=$(git rev-parse --short HEAD) && \
+        SPT_BUILD_TIME=$(date +%Y%m%d) && \
+        echo "Building SPT ${SPT_VERSION_NUM} (commit: ${SPT_COMMIT}, date: ${SPT_BUILD_TIME})" && \
+        echo "Project file: ./SPTarkov.Server/SPTarkov.Server.csproj" && \
+        ls -la ./SPTarkov.Server/ && \
         dotnet publish ./SPTarkov.Server/SPTarkov.Server.csproj \
-            -c ${SPT_BUILD_CONFIG} \
-            -f net9.0 \
+            -c "${SPT_BUILD_CONFIG}" \
             -r linux-arm64 \
-            -p:IncludeNativeLibrariesForSelfExtract=true \
             --self-contained false \
-            -p:SptBuildType=${SPT_BUILD_TYPE} \
-            -p:SptVersion=${SPT_VERSION_NUM} \
-            -p:SptBuildTime=$(date +%Y%m%d) \
-            -p:SptCommit=$(git rev-parse --short HEAD) \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:SptBuildType="${SPT_BUILD_TYPE}" \
+            -p:SptVersion="${SPT_VERSION_NUM}" \
+            -p:SptBuildTime="${SPT_BUILD_TIME}" \
+            -p:SptCommit="${SPT_COMMIT}" \
             -p:IsPublish=true && \
+        echo "Build completed, checking output..." && \
+        find SPTarkov.Server/bin -type d -name "publish" && \
         cd ..; \
     fi
 
@@ -70,8 +79,10 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     else \
         echo "=== ARM64: Moving compiled files ===" && \
         mkdir -p /opt/build && \
-        rm -f spt/SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/linux-arm64/publish/*.pdb && \
-        mv spt/SPTarkov.Server/bin/${SPT_BUILD_CONFIG}/net9.0/linux-arm64/publish/* /opt/build/; \
+        PUBLISH_DIR=$(find spt/SPTarkov.Server/bin -type d -name "publish" | head -1) && \
+        echo "Found publish directory: ${PUBLISH_DIR}" && \
+        rm -f ${PUBLISH_DIR}/*.pdb && \
+        mv ${PUBLISH_DIR}/* /opt/build/; \
     fi
 
 # Step 5: Cleanup
