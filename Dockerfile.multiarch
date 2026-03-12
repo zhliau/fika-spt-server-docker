@@ -65,7 +65,8 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
             -p:SptVersion="${SPT_VERSION_NUM}" \
             -p:SptBuildTime="${SPT_BUILD_TIME}" \
             -p:SptCommit="${SPT_COMMIT}" \
-            -p:IsPublish=true && \
+            -p:IsPublish=true \
+            -p:LangVersion=preview && \
         echo "Build completed, checking output..." && \
         find SPTarkov.Server/bin -type d -name "publish" && \
         cd ..; \
