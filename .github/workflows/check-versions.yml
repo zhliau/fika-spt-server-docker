@@ -181,7 +181,7 @@ jobs:
           # Update all files
           sed -i "s/^ARG FIKA_VERSION=.*/ARG FIKA_VERSION=${NEW_FIKA}/" Dockerfile
           sed -i "s/^ARG FIKA_VERSION=.*/ARG FIKA_VERSION=${NEW_FIKA}/" Dockerfile.multiarch
-          sed -i "s/^fika_version=\${FIKA_VERSION:-.*}/fika_version=\${FIKA_VERSION:-${NEW_FIKA}}/" entrypoint.sh
+          sed -i "s/^fika_version=\${FIKA_VERSION:-.*}/fika_version=\${FIKA_VERSION:-${NEW_FIKA}\}/" entrypoint.sh
 
       - name: Commit and push Fika update
         if: steps.check.outputs.action == 'update_fika'

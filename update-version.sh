@@ -115,10 +115,10 @@ update_entrypoint() {
     echo_info "Updating entrypoint.sh..."
 
     # Update default SPT_VERSION
-    sed -i "s/^spt_version=\${SPT_VERSION:-.*}/spt_version=\${SPT_VERSION:-${spt_version}}/" "$entrypoint"
+    sed -i "s/^spt_version=\${SPT_VERSION:-.*}/spt_version=\${SPT_VERSION:-${spt_version}\}/" "$entrypoint"
 
     # Update default FIKA_VERSION
-    sed -i "s/^fika_version=\${FIKA_VERSION:-.*}/fika_version=\${FIKA_VERSION:-${fika_version}}/" "$entrypoint"
+    sed -i "s/^fika_version=\${FIKA_VERSION:-.*}/fika_version=\${FIKA_VERSION:-${fika_version}\}/" "$entrypoint"
 
     echo_info "Updated entrypoint.sh"
 }
