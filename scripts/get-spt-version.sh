@@ -1,105 +1,89 @@
 #!/bin/bash
 # Script to automatically fetch the latest SPT version information
-# This queries the sp-tarkov/build GitHub releases API to get version details
+# This extracts the download URL from sp-tarkov/build release notes
 
 set -e
 
-# Function to get the latest SPT release version
+# Function to get the latest SPT version from release download URL
 get_latest_spt_version() {
     local github_api="https://api.github.com/repos/sp-tarkov/build/releases/latest"
 
-    # Fetch the latest release info
-    echo "Fetching latest SPT version from GitHub..." >&2
+    echo "Fetching latest SPT release from GitHub..." >&2
 
     local release_json=$(curl -s "$github_api")
+    local release_body=$(echo "$release_json" | jq -r '.body')
 
-    # Extract the tag name (version)
-    local version=$(echo "$release_json" | jq -r '.tag_name')
-
-    if [ "$version" = "null" ] || [ -z "$version" ]; then
-        echo "Error: Could not fetch version from GitHub API" >&2
+    if [ "$release_body" = "null" ] || [ -z "$release_body" ]; then
+        echo "Error: Could not fetch release body from GitHub API" >&2
         return 1
     fi
 
-    echo "$version"
+    # Extract the download URL from release notes
+    # Format: https://spt-releases.modd.in/SPT-4.0.13-40087-2891fd4.7z
+    local download_url=$(echo "$release_body" | grep -oP 'https://spt-releases\.modd\.in/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
+
+    if [ -z "$download_url" ]; then
+        echo "Error: Could not find download URL in release notes" >&2
+        echo "Release body:" >&2
+        echo "$release_body" | head -20 >&2
+        return 1
+    fi
+
+    # Extract version string from URL
+    # From: https://spt-releases.modd.in/SPT-4.0.13-40087-2891fd4.7z
+    # To: 4.0.13-40087-2891fd4
+    local full_version=$(echo "$download_url" | sed -E 's|https://spt-releases\.modd\.in/SPT-||; s|\.7z$||')
+
+    if [ -z "$full_version" ]; then
+        echo "Error: Could not parse version from URL: $download_url" >&2
+        return 1
+    fi
+
+    echo "Found version: $full_version" >&2
+    echo "Download URL: $download_url" >&2
+
+    echo "$full_version"
 }
 
-# Function to get SPT version from server-csharp repository
-# This gets the git commit SHA that corresponds to the version
-get_spt_version_details() {
-    local version="$1"
+# Function to get version from a specific release tag
+get_version_from_release() {
+    local version_tag="$1"
 
-    if [ -z "$version" ]; then
-        echo "Error: Version parameter required" >&2
-        return 1
-    fi
+    local github_api="https://api.github.com/repos/sp-tarkov/build/releases/tags/${version_tag}"
 
-    # Query the server-csharp repo for the tag
-    local github_api="https://api.github.com/repos/sp-tarkov/server-csharp/git/refs/tags/${version}"
-
-    echo "Fetching commit details for version ${version}..." >&2
-
-    local tag_json=$(curl -s "$github_api")
-    local commit_sha=$(echo "$tag_json" | jq -r '.object.sha' | cut -c1-7)
-
-    if [ "$commit_sha" = "null" ] || [ -z "$commit_sha" ]; then
-        echo "Error: Could not fetch commit SHA for version ${version}" >&2
-        return 1
-    fi
-
-    echo "$commit_sha"
-}
-
-# Function to construct the full SPT version string
-# Format: VERSION-BUILD_NUMBER-COMMIT_SHA (e.g., 4.0.13-40087-2891fd4)
-construct_version_string() {
-    local version="$1"
-    local build_number="${2:-40087}"  # Default to 40087 if not provided
-
-    if [ -z "$version" ]; then
-        echo "Error: Version parameter required" >&2
-        return 1
-    fi
-
-    local commit_sha=$(get_spt_version_details "$version")
-
-    if [ $? -ne 0 ]; then
-        return 1
-    fi
-
-    echo "${version}-${build_number}-${commit_sha}"
-}
-
-# Function to get build number from release assets
-# The build number is typically in the archive name
-get_build_number_from_release() {
-    local version="$1"
-
-    local github_api="https://api.github.com/repos/sp-tarkov/build/releases/tags/${version}"
-
-    echo "Fetching release assets for version ${version}..." >&2
+    echo "Fetching release info for version ${version_tag}..." >&2
 
     local release_json=$(curl -s "$github_api")
+    local release_body=$(echo "$release_json" | jq -r '.body')
 
-    # Look for the 7z asset and extract build number from filename
-    # Format: SPT-VERSION-BUILD-SHA.7z
-    local asset_name=$(echo "$release_json" | jq -r '.assets[] | select(.name | endswith(".7z")) | .name' | head -n1)
-
-    if [ -z "$asset_name" ] || [ "$asset_name" = "null" ]; then
-        echo "Warning: Could not find 7z asset, using default build number" >&2
-        echo "40087"  # Default fallback
-        return 0
+    if [ "$release_body" = "null" ] || [ -z "$release_body" ]; then
+        echo "Error: Could not fetch release body from GitHub API" >&2
+        return 1
     fi
 
-    # Extract build number from filename: SPT-4.0.13-40087-2891fd4.7z
-    local build_number=$(echo "$asset_name" | sed -E 's/SPT-[0-9.]+//; s/-[a-f0-9]+\.7z//; s/-//')
+    # Extract the download URL from release notes
+    local download_url=$(echo "$release_body" | grep -oP 'https://spt-releases\.modd\.in/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
 
-    if [ -z "$build_number" ]; then
-        echo "Warning: Could not parse build number from asset name, using default" >&2
-        echo "40087"
-    else
-        echo "$build_number"
+    if [ -z "$download_url" ]; then
+        echo "Error: Could not find download URL in release notes for ${version_tag}" >&2
+        return 1
     fi
+
+    # Extract version string from URL
+    local full_version=$(echo "$download_url" | sed -E 's|https://spt-releases\.modd\.in/SPT-||; s|\.7z$||')
+
+    if [ -z "$full_version" ]; then
+        echo "Error: Could not parse version from URL: $download_url" >&2
+        return 1
+    fi
+
+    echo "$full_version"
+}
+
+# Function to extract just the version number from full version string
+get_version_number() {
+    local full_version="$1"
+    echo "$full_version" | cut -d'-' -f1
 }
 
 # Main script logic
@@ -108,21 +92,17 @@ main() {
 
     case "$command" in
         latest)
-            # Get the latest version and construct full version string
-            local version=$(get_latest_spt_version)
-            if [ $? -ne 0 ]; then
-                exit 1
-            fi
-
-            local build_number=$(get_build_number_from_release "$version")
-            local full_version=$(construct_version_string "$version" "$build_number")
-
-            echo "$full_version"
+            # Get the latest full version string from release notes
+            get_latest_spt_version
             ;;
 
         version)
             # Just get the version number (e.g., 4.0.13)
-            get_latest_spt_version
+            local full_version=$(get_latest_spt_version)
+            if [ $? -ne 0 ]; then
+                exit 1
+            fi
+            get_version_number "$full_version"
             ;;
 
         specific)
@@ -133,10 +113,7 @@ main() {
                 exit 1
             fi
 
-            local build_number=$(get_build_number_from_release "$version")
-            local full_version=$(construct_version_string "$version" "$build_number")
-
-            echo "$full_version"
+            get_version_from_release "$version"
             ;;
 
         help|--help|-h)
@@ -157,6 +134,9 @@ Examples:
 
 Output format: VERSION-BUILD_NUMBER-COMMIT_SHA
 Example: 4.0.13-40087-2891fd4
+
+Note: This script extracts the actual download URL from the release notes,
+ensuring the version string matches an existing archive.
 EOF
             ;;
 

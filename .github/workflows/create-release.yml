@@ -1,0 +1,53 @@
+name: Create Draft Release
+
+on:
+  push:
+    tags:
+      - '*.*.*'  # Trigger on semver tags like 4.0.14
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version info
+        id: version
+        run: |
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "tag=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+          # Get SPT and Fika versions from Dockerfile
+          SPT_VERSION=$(grep "^ARG SPT_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2)
+          FIKA_VERSION=$(grep "^ARG FIKA_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2)
+
+          echo "spt=${SPT_VERSION}" >> $GITHUB_OUTPUT
+          echo "fika=${FIKA_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          # Extract SPT version number (without build info)
+          SPT_VERSION=$(echo "${{ steps.version.outputs.spt }}" | cut -d'-' -f1)
+
+          cat > release_notes.md <<EOF
+          \`\`\`
+          docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.tag }}
+          \`\`\`
+
+          | SPT Server | Fika Server  |
+          | ----------- | ------------ |
+          | [${SPT_VERSION}](https://github.com/sp-tarkov/server-csharp/releases/tag/${SPT_VERSION}) | [${{ steps.version.outputs.fika }}](https://github.com/project-fika/Fika-Server-CSharp/releases/tag/v${{ steps.version.outputs.fika }}) |
+          EOF
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: "Release ${{ steps.version.outputs.tag }}"
+          body_path: release_notes.md
+          generate_release_notes: true
