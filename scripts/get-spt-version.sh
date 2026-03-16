@@ -4,33 +4,81 @@
 
 set -e
 
-# Function to get the latest SPT release version from asset filename
-get_latest_spt_version() {
+# Function to get the latest SPT release version info from GitHub
+get_latest_spt_release_info() {
     local github_api="https://api.github.com/repos/sp-tarkov/build/releases/latest"
 
-    # Fetch the latest release info
-    echo "Fetching latest SPT version from GitHub..." >&2
+    echo "Fetching latest SPT release from GitHub..." >&2
 
     local release_json=$(curl -s "$github_api")
 
-    # Extract the 7z asset filename which contains the full version string
-    # Format: SPT-4.0.13-40087-2891fd4.7z
-    local asset_name=$(echo "$release_json" | jq -r '.assets[] | select(.name | endswith(".7z")) | .name' | head -n1)
+    # Extract the tag name (version number like 4.0.13)
+    local version=$(echo "$release_json" | jq -r '.tag_name')
 
-    if [ -z "$asset_name" ] || [ "$asset_name" = "null" ]; then
-        echo "Error: Could not find .7z asset in release" >&2
+    # Extract the build number from release name like "SPT 4.0.13 (40087)"
+    local release_name=$(echo "$release_json" | jq -r '.name')
+    local build_number=$(echo "$release_name" | grep -oP '\(\K[0-9]+(?=\))')
+
+    if [ "$version" = "null" ] || [ -z "$version" ]; then
+        echo "Error: Could not fetch version from GitHub API" >&2
         return 1
     fi
 
-    # Extract full version string from filename: SPT-4.0.13-40087-2891fd4.7z -> 4.0.13-40087-2891fd4
-    local full_version=$(echo "$asset_name" | sed -E 's/^SPT-//; s/\.7z$//')
-
-    if [ -z "$full_version" ]; then
-        echo "Error: Could not parse version from asset name: $asset_name" >&2
+    if [ -z "$build_number" ]; then
+        echo "Error: Could not extract build number from release name: $release_name" >&2
         return 1
     fi
 
-    echo "$full_version"
+    echo "$version:$build_number"
+}
+
+# Function to get commit SHA from server-csharp repository for a specific version
+get_commit_sha() {
+    local version="$1"
+
+    local github_api="https://api.github.com/repos/sp-tarkov/server-csharp/git/refs/tags/${version}"
+
+    echo "Fetching commit SHA for version ${version}..." >&2
+
+    local tag_json=$(curl -s "$github_api")
+    local commit_sha=$(echo "$tag_json" | jq -r '.object.sha' | cut -c1-7)
+
+    if [ "$commit_sha" = "null" ] || [ -z "$commit_sha" ]; then
+        echo "Error: Could not fetch commit SHA for version ${version}" >&2
+        return 1
+    fi
+
+    echo "$commit_sha"
+}
+
+# Function to construct and verify the full SPT version string
+get_latest_spt_version() {
+    local release_info=$(get_latest_spt_release_info)
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    local version=$(echo "$release_info" | cut -d':' -f1)
+    local build_number=$(echo "$release_info" | cut -d':' -f2)
+
+    local commit_sha=$(get_commit_sha "$version")
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+
+    local full_version="${version}-${build_number}-${commit_sha}"
+
+    # Verify the archive exists at the download URL
+    local download_url="https://spt-releases.modd.in/SPT-${full_version}.7z"
+    echo "Verifying archive exists: ${download_url}" >&2
+
+    if curl --head --silent --fail "$download_url" > /dev/null 2>&1; then
+        echo "$full_version"
+    else
+        echo "Warning: Archive not found at ${download_url}" >&2
+        echo "Returning version string anyway: ${full_version}" >&2
+        echo "$full_version"
+    fi
 }
 
 # Function to get full version string from a specific release
@@ -39,27 +87,25 @@ get_version_from_release() {
 
     local github_api="https://api.github.com/repos/sp-tarkov/build/releases/tags/${version_tag}"
 
-    echo "Fetching release assets for version ${version_tag}..." >&2
+    echo "Fetching release info for version ${version_tag}..." >&2
 
     local release_json=$(curl -s "$github_api")
 
-    # Extract the 7z asset filename which contains the full version string
-    local asset_name=$(echo "$release_json" | jq -r '.assets[] | select(.name | endswith(".7z")) | .name' | head -n1)
+    # Extract the build number from release name
+    local release_name=$(echo "$release_json" | jq -r '.name')
+    local build_number=$(echo "$release_name" | grep -oP '\(\K[0-9]+(?=\))')
 
-    if [ -z "$asset_name" ] || [ "$asset_name" = "null" ]; then
-        echo "Error: Could not find .7z asset in release" >&2
+    if [ -z "$build_number" ]; then
+        echo "Error: Could not extract build number from release name: $release_name" >&2
         return 1
     fi
 
-    # Extract full version string from filename
-    local full_version=$(echo "$asset_name" | sed -E 's/^SPT-//; s/\.7z$//')
-
-    if [ -z "$full_version" ]; then
-        echo "Error: Could not parse version from asset name: $asset_name" >&2
+    local commit_sha=$(get_commit_sha "$version_tag")
+    if [ $? -ne 0 ]; then
         return 1
     fi
 
-    echo "$full_version"
+    echo "${version_tag}-${build_number}-${commit_sha}"
 }
 
 # Function to extract just the version number from full version string
@@ -74,7 +120,7 @@ main() {
 
     case "$command" in
         latest)
-            # Get the latest full version string from release asset
+            # Get the latest full version string
             get_latest_spt_version
             ;;
 
