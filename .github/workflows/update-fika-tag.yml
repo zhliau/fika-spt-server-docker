@@ -1,0 +1,69 @@
+name: Update SPT Tag on Version Change
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  update-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check what changed
+        id: check
+        run: |
+          FIKA_CHANGED=$(git diff HEAD~1 HEAD -- Dockerfile | grep "^+ARG FIKA_VERSION=" | head -n1)
+          SPT_CHANGED=$(git diff HEAD~1 HEAD -- Dockerfile | grep "^+ARG SPT_VERSION=" | head -n1)
+
+          if [ -z "$FIKA_CHANGED" ] && [ -z "$SPT_CHANGED" ]; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "changed=true" >> $GITHUB_OUTPUT
+
+          SPT_VERSION=$(grep "^ARG SPT_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2 | cut -d'-' -f1)
+          FIKA_VERSION=$(grep "^ARG FIKA_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2)
+          echo "spt_version=${SPT_VERSION}" >> $GITHUB_OUTPUT
+          echo "fika_version=${FIKA_VERSION}" >> $GITHUB_OUTPUT
+
+          # If SPT changed, we also need the old SPT version to delete its tag
+          if [ -n "$SPT_CHANGED" ]; then
+            OLD_SPT_VERSION=$(git diff HEAD~1 HEAD -- Dockerfile | grep "^-ARG SPT_VERSION=" | head -n1 | cut -d'=' -f2 | cut -d'-' -f1)
+            echo "old_spt_version=${OLD_SPT_VERSION}" >> $GITHUB_OUTPUT
+            echo "spt_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "spt_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update SPT version tag
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          SPT_VERSION="${{ steps.check.outputs.spt_version }}"
+          OLD_SPT_VERSION="${{ steps.check.outputs.old_spt_version }}"
+          FIKA_VERSION="${{ steps.check.outputs.fika_version }}"
+          SPT_CHANGED="${{ steps.check.outputs.spt_changed }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [ "$SPT_CHANGED" = "false" ]; then
+            # Fika-only change: move the existing SPT tag to new HEAD
+            git tag -d "${SPT_VERSION}" || true
+            git push origin ":refs/tags/${SPT_VERSION}" || true
+          fi
+          # SPT version changed: leave the old tag in place, just create the new one
+
+          git tag -a "${SPT_VERSION}" HEAD -m "SPT ${SPT_VERSION} with Fika ${FIKA_VERSION}"
+          git push origin "${SPT_VERSION}"
+
+          echo "Tag ${SPT_VERSION} set at HEAD (Fika ${FIKA_VERSION})"
