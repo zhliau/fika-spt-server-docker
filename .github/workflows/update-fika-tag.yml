@@ -1,0 +1,48 @@
+name: Move SPT Tag on Fika Update
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  update-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if Fika version changed
+        id: check
+        run: |
+          FIKA_CHANGED=$(git diff HEAD~1 HEAD -- Dockerfile | grep "^+ARG FIKA_VERSION=" | head -n1)
+          if [ -n "$FIKA_CHANGED" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            SPT_VERSION=$(grep "^ARG SPT_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2 | cut -d'-' -f1)
+            FIKA_VERSION=$(grep "^ARG FIKA_VERSION=" Dockerfile | head -n1 | cut -d'=' -f2)
+            echo "spt_version=${SPT_VERSION}" >> $GITHUB_OUTPUT
+            echo "fika_version=${FIKA_VERSION}" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Move SPT version tag to latest commit
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          SPT_VERSION="${{ steps.check.outputs.spt_version }}"
+          FIKA_VERSION="${{ steps.check.outputs.fika_version }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -d "${SPT_VERSION}" || true
+          git push origin ":refs/tags/${SPT_VERSION}" || true
+          git tag -a "${SPT_VERSION}" HEAD -m "SPT ${SPT_VERSION} with Fika ${FIKA_VERSION}"
+          git push origin "${SPT_VERSION}"
+
+          echo "Tag ${SPT_VERSION} moved to HEAD (Fika ${FIKA_VERSION})"
