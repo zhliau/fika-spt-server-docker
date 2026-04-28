@@ -77,28 +77,12 @@ jobs:
           echo "Branch '$BRANCH' created and pushed"
           echo "Create a PR manually from: https://github.com/${{ github.repository }}/compare/${BRANCH}"
 
-      # Fika-Only Update - archive tag and update files
+      # Fika-Only Update - update files
       - name: Prepare Fika update
         if: steps.versions.outputs.action == 'fika'
         run: |
-          SPT_VERSION="${{ steps.versions.outputs.spt_version }}"
-          OLD_FIKA="${{ steps.versions.outputs.current_fika }}"
           NEW_FIKA="${{ steps.versions.outputs.latest_fika }}"
-          TIMESTAMP=$(date +%Y%m%d)
 
-          # Configure git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Archive current tag if it exists
-          if git rev-parse "$SPT_VERSION" >/dev/null 2>&1; then
-            ARCHIVE_TAG="${SPT_VERSION}-fika${OLD_FIKA}-${TIMESTAMP}"
-            git tag -a "${ARCHIVE_TAG}" "$SPT_VERSION" -m "Archive of SPT ${SPT_VERSION} with Fika ${OLD_FIKA}"
-            git push origin "${ARCHIVE_TAG}"
-            echo "Archived as ${ARCHIVE_TAG}"
-          fi
-
-          # Update files
           sed -i "s/^ARG FIKA_VERSION=.*/ARG FIKA_VERSION=${NEW_FIKA}/" Dockerfile Dockerfile.multiarch
           sed -i "s/^fika_version=\${FIKA_VERSION:-.*\}/fika_version=\${FIKA_VERSION:-${NEW_FIKA}\}/" entrypoint.sh
 
