@@ -84,7 +84,7 @@ jobs:
           SPT_VERSION="${{ steps.versions.outputs.spt_version }}"
           OLD_FIKA="${{ steps.versions.outputs.current_fika }}"
           NEW_FIKA="${{ steps.versions.outputs.latest_fika }}"
-          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          TIMESTAMP=$(date +%Y%m%d)
 
           # Configure git
           git config user.name "github-actions[bot]"
