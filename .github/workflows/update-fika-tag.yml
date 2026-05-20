@@ -1,13 +1,21 @@
-name: Update SPT Tag on Version Change
+name: Tag on Version Update PR Merge
 
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - master
   workflow_dispatch:
 
 jobs:
   update-tag:
+    if: |
+      github.event_name == 'workflow_dispatch' || (
+        github.event.pull_request.merged == true && (
+          contains(github.event.pull_request.labels.*.name, 'fika-update') ||
+          startsWith(github.event.pull_request.head.ref, 'update-spt-')
+        )
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write
