@@ -1,4 +1,5 @@
 # fika-spt-server-docker
+<!-- test PR for auto-tagging workflow -->
 🐳 Clean and easy way to run SPT + Fika server in docker, with auto-updates, profile backups, and the flexibility to modify server files as you wish 🐳
 
 # 🤔 Why?
