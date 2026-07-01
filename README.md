@@ -14,10 +14,6 @@ That's it! The image has everything else you need to run an SPT Server, with Fik
 >
 > If you wish to use the LTS version of SPT (3.11.4), make sure you specify the image tag `fika-spt-server-docker:3.11.4` explicitly instead of using `latest`)
 
-> [!WARNING]
-> For users attempting to run version 4.0.0 of this docker image on ARM64 platform (i.e. Raspberry Pi), please note that this image will fail to run currently.
-> Please see [this issue](https://github.com/zhliau/fika-spt-server-docker/issues/33) for more information
-
 - [🪄 Features](#-features)
 - [🥡 Releases](#-releases)
 - [🛫 Running](#-running)
@@ -266,7 +262,7 @@ None of these env vars are required, but they may be useful.
 | `FIKA_MODE`               | disabled | Controls Fika installation and updates. Options: `disabled` (no Fika), `install` (install and validate, exit on mismatch), `auto-update` (install and auto-update on mismatch), `custom` (skip validation for custom builds)              |
 | `INSTALL_OTHER_MODS`      | false   | Whether you want the container to automatically download & install any other mods as specified                                                                                                                                            |
 | `MOD_URLS_TO_DOWNLOAD`    | null    | A space separated list of URLs you want the server to automatically download and place. Requires `INSTALL_OTHER_MODS` to be true                                                                                                          |
-| `FIKA_VERSION`            | 2.2.1   | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
+| `FIKA_VERSION`            | null    | Override the fika version string to grab the server release from. The release URL is formatted as `https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$FIKA_VERSION/Fika.Server.Release.$FIKA_VERSION.zip`              |
 | `AUTO_UPDATE_SPT`         | false   | Whether you want the container to handle updating SPT in your existing serverfiles                                                                                                                                                        |
 | ~~`INSTALL_FIKA`~~        | false   | **DEPRECATED:** Use `FIKA_MODE` instead. Set to `install` or `auto-update`                                                                                                                                                                |
 | ~~`AUTO_UPDATE_FIKA`~~    | false   | **DEPRECATED:** Use `FIKA_MODE=auto-update` instead                                                                                                                                                                                       |
@@ -347,22 +343,20 @@ python -m venv .venv
 Once installed, the hooks will run automatically on every commit.
 
 ### Building
-> [!WARNING]
-> As of SPT version 4.0.0, these instructions are deprecated because we use precompiled server binaries
-> In the future, I will implement building the server from source to support unreleased git tags
 
-You can overwrite the expected SPT version by setting the `SPT_SHA` build arg. This must correspond with a git ref (tag or branch) in the
-SPT Server github repo. This version must be a release [semver](https://semver.org/) value, or a pre-release ref like `3.11.4-dev`
-The value is checked against the `sptVersion` value in `SPT_Data/Server/configs/core.json` when validating the SPT version on container boot. If using a pre-release version tag,
-everything including and after the `-` is dropped when comparing version strings.
+The image is built using `Dockerfile.multiarch` via the `docker-publish-multiarch.yml` workflow. It uses a hybrid approach:
+- **AMD64**: Downloads pre-compiled binaries from the official SPT release archive
+- **ARM64**: Clones the SPT server source and compiles with `dotnet publish`
 
-You can similarly override the Fika version by setting the `FIKA_VERSION` build arg. Make sure this matches the Fika version slug in the Fika Server download URL.
-
-The URL will look like `https://github.com/project-fika/Fika-Server/releases/download/<FIKA_VERSION>/fika-server-<FIKA_VERSION_WITHOUT_V>.zip`
-
+To build locally:
 ```bash
-# Server binary built using SPT Server 3.11.4 git tag, image tagged as fika-spt-server:latest
-# Downloads and validates Fika version v2.4.8
-
-VERSION=latest FIKA_VERSION=v2.4.8 SPT_SHA=3.11.4 ./build
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -f Dockerfile.multiarch \
+  --build-arg SPT_VERSION=4.0.13-40087-2891fd4 \
+  --build-arg FIKA_VERSION=2.3.2 \
+  -t fika-spt-server-docker:local \
+  .
 ```
+
+You can override the versions via the `SPT_VERSION` and `FIKA_VERSION` build args. `SPT_VERSION` must match the full release archive name format: `<VERSION>-<EFT_BUILD>-<GIT_SHA>` (e.g. `4.0.13-40087-2891fd4`).
