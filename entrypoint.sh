@@ -30,9 +30,23 @@ fika_config_path=assets/configs/fika.jsonc
 fika_mod_dir=$spt_dir/user/mods/fika-server
 fika_artifact=Fika.Server.Release.$fika_version.zip
 fika_release_url="https://github.com/project-fika/Fika-Server-CSharp/releases/download/v$fika_version/$fika_artifact"
-fika_remote_SHA=$(curl -s "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" | grep -oP '"sha":\s*"\K[^"]+')
+# Fetched lazily in validate() only when FIKA_MODE needs it. Do not curl at
+# top-level under bash -e: a missing "sha" (rate limit, network blip, bad JSON)
+# makes grep fail and aborts the entrypoint with exit 1 and no logs.
+fika_remote_SHA=
 
 auto_update_spt=${AUTO_UPDATE_SPT:-false}
+
+# Resolve the Fika release tag SHA from GitHub. Returns empty on failure and
+# never trips bash -e, so FIKA_MODE=disabled boots without requiring GitHub.
+fetch_fika_remote_sha() {
+    local response sha
+    response=$(curl -fsS --connect-timeout 10 --max-time 30 \
+        "https://api.github.com/repos/project-fika/Fika-Server-CSharp/git/refs/tags/v$fika_version" \
+        2>/dev/null || true)
+    sha=$(printf '%s' "$response" | grep -oP '"sha":\s*"\K[^"]+' || true)
+    printf '%s' "$sha"
+}
 
 # Backwards compatibility for deprecated variables
 install_fika=${INSTALL_FIKA:-}
@@ -157,18 +171,24 @@ validate() {
                 echo "Skipping Fika validation (FIKA_MODE=custom)"
                 ;;
             install|auto-update)
-                if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
-                    fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
-                fi
-                if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
-                    echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
-                    if [[ "$fika_mode" == "auto-update" ]]; then
-                        echo "Auto-updating Fika version to $fika_version"
-                        try_update_fika
-                    else
-                        echo "Fika version mismatch detected. Set FIKA_MODE=auto-update to enable automatic updates."
-                        echo "Aborting"
-                        exit 1
+                fika_remote_SHA=$(fetch_fika_remote_sha)
+                if [[ -z "$fika_remote_SHA" ]]; then
+                    echo "WARNING: Could not resolve Fika release SHA for v$fika_version from GitHub."
+                    echo "         Skipping Fika version validation this boot (network/API issue?)."
+                else
+                    if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
+                        fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*' || true)
+                    fi
+                    if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
+                        echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
+                        if [[ "$fika_mode" == "auto-update" ]]; then
+                            echo "Auto-updating Fika version to $fika_version"
+                            try_update_fika
+                        else
+                            echo "Fika version mismatch detected. Set FIKA_MODE=auto-update to enable automatic updates."
+                            echo "Aborting"
+                            exit 1
+                        fi
                     fi
                 fi
                 ;;
