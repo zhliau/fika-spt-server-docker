@@ -5,7 +5,7 @@
 # Stage 1: Download pre-compiled binaries for AMD64 OR build from source for ARM64
 FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS builder
 
-ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG SPT_VERSION=4.1.1-40743-e18bd1e
 ARG TARGETARCH
 ARG SPT_BUILD_TYPE=RELEASE
 ARG SPT_BUILD_CONFIG=Release
@@ -111,8 +111,8 @@ RUN apt update && apt install -y --no-install-recommends \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-ARG SPT_VERSION=4.0.13-40087-2891fd4
-ARG FIKA_VERSION=2.3.2
+ARG SPT_VERSION=4.1.1-40743-e18bd1e
+ARG FIKA_VERSION=2.4.0
 ARG TARGETARCH
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION
