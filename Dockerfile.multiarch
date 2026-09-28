@@ -3,9 +3,9 @@
 # - ARM64: Compiles from source (necessary for ARM support)
 
 # Stage 1: Download pre-compiled binaries for AMD64 OR build from source for ARM64
-FROM mcr.microsoft.com/dotnet/sdk:9.0-bookworm-slim AS builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS builder
 
-ARG SPT_VERSION=4.0.13-40087-2891fd4
+ARG SPT_VERSION=4.1.6-40743-731d7a2
 ARG TARGETARCH
 ARG SPT_BUILD_TYPE=RELEASE
 ARG SPT_BUILD_CONFIG=Release
@@ -31,14 +31,15 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "=== ARM64: Cloning source repository ===" && \
         SPT_VERSION_NUM=$(echo ${SPT_VERSION} | cut -d'-' -f1) && \
         echo "Cloning branch: ${SPT_VERSION_NUM}" && \
-        git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tarkov/server-csharp.git spt && \
+        git clone --depth 1 --branch ${SPT_VERSION_NUM} https://github.com/sp-tushonka/server-csharp.git spt && \
         ls -la spt/; \
     fi
 
 # Step 2: Extract (AMD64) or pull LFS files (ARM64)
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "=== AMD64: Extracting archive ===" && \
-        7zr x spt.7z; \
+        mkdir -p spt
+        7zr x spt.7z -o spt/; \
     else \
         echo "=== ARM64: Pulling LFS files ===" && \
         cd spt && \
@@ -76,7 +77,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "=== AMD64: Moving extracted files ===" && \
         mkdir -p /opt/build && \
-        mv SPT/* /opt/build/; \
+        mv spt/* /opt/build/; \
     else \
         echo "=== ARM64: Moving compiled files ===" && \
         mkdir -p /opt/build && \
@@ -89,14 +90,14 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 # Step 5: Cleanup
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         echo "=== AMD64: Cleanup ===" && \
-        rm -rf SPT spt.7z; \
+        rm -rf spt spt.7z; \
     else \
         echo "=== ARM64: Cleanup ===" && \
         rm -rf spt; \
     fi
 
 # Stage 2: Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 
 RUN apt update && apt install -y --no-install-recommends \
     curl \
@@ -111,8 +112,8 @@ RUN apt update && apt install -y --no-install-recommends \
     dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
-ARG SPT_VERSION=4.0.13-40087-2891fd4
-ARG FIKA_VERSION=2.3.2
+ARG SPT_VERSION=4.1.6-40743-731d7a2
+ARG FIKA_VERSION=2.4.0
 ARG TARGETARCH
 ENV SPT_VERSION=$SPT_VERSION
 ENV FIKA_VERSION=$FIKA_VERSION

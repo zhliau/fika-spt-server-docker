@@ -23,30 +23,31 @@
 # Get the passed in mounted_dir variable
 mounted_dir=$1
 
+spt_dir=$mounted_dir/SPT_Runtime
 mod_download_dirname=mod_download
-mod_download_dir=$mounted_dir/$mod_download_dirname
-mod_download_remains_relative_dir=$mod_download_dirname/remains
-mod_download_remains_dir=$mounted_dir/$mod_download_remains_relative_dir
+mod_download_dir="$mounted_dir/$mod_download_dirname"
+mod_download_remains_relative_dir="$mod_download_dirname/remains"
+mod_download_remains_dir="$mounted_dir/$mod_download_remains_relative_dir"
 
-plugins_mod_dir="$(dirname "$mounted_dir")/BepInEx/plugins"
-user_mod_dir=$mounted_dir/user/mods
+plugins_mod_dir="$mounted_dir/BepInEx/plugins"
+user_mod_dir="$spt_dir/user/mods"
 
 # File for mod urls the user requests to be downloaded
 mod_urls_to_download_filename=mod_urls_to_download.txt
-mod_urls_to_download_filepath=$mod_download_dir/$mod_urls_to_download_filename
+mod_urls_to_download_filepath="$mod_download_dir/$mod_urls_to_download_filename"
 
 # File to keep track of the mod urls that have been downloaded.
-mod_urls_downloaded_filepath=$mod_download_dir/mod_urls_downloaded.txt
+mod_urls_downloaded_filepath="$mod_download_dir/mod_urls_downloaded.txt"
 
 # File to output logs, including wget and upzip commands.
-download_unzip_install_logs_relative_filepath=$mod_download_dirname/download_unzip_install_mods.log
-download_unzip_install_logs_filepath=$mounted_dir/$download_unzip_install_logs_relative_filepath
+download_unzip_install_logs_relative_filepath="$mod_download_dirname/download_unzip_install_mods.log"
+download_unzip_install_logs_filepath="$mounted_dir/$download_unzip_install_logs_relative_filepath"
 
 # Download to and unzip in the tmp directory
 tmp_download_dir=/tmp/download_mods
-tmp_downloaded_dir=$tmp_download_dir/downloaded
-tmp_extracted_dir=$tmp_download_dir/extracted
-new_urls_to_download_filepath=$tmp_download_dir/new_urls_to_download.txt
+tmp_downloaded_dir="$tmp_download_dir/downloaded"
+tmp_extracted_dir="$tmp_download_dir/extracted"
+new_urls_to_download_filepath="$tmp_download_dir/new_urls_to_download.txt"
 
 # Create the download dir
 make_download_dirs_and_files() {
@@ -58,6 +59,8 @@ make_download_dirs_and_files() {
 
     # Create the tmp download and unzip directories.
     mkdir -p $tmp_download_dir
+    mkdir -p $tmp_extracted_dir
+
     touch $new_urls_to_download_filepath
 }
 
@@ -121,6 +124,7 @@ download_new_urls() {
         --log=$download_unzip_install_logs_filepath
 
         # Once all downloads are complete, append the downloaded files list to the master list for .
+        echo "  Finished Downloading, moving to Adding files to downloaded list"
         cat $new_urls_to_download_filepath >> $mod_urls_downloaded_filepath
     else
         # Local variable to send the same message to stdout with a double space indentation and to the logs without
@@ -163,7 +167,8 @@ extract_7zip_files() {
             echo "  Unzipping $z" >> $download_unzip_install_logs_filepath
             # -o to specify directory (which will be deleted during cleanup below).
             # &>> to redirect all normal and error outputs to log file as append
-            7zz x "$z" -o$tmp_extracted_dir &>> $download_unzip_install_logs_filepath;
+            7z x "$z" -o$tmp_extracted_dir &>> $download_unzip_install_logs_filepath;
+
             # remove it once downloaded
             rm "$z"
         done
@@ -210,24 +215,20 @@ move_extracted_files() {
     mkdir -p $plugins_mod_dir
     mkdir -p $user_mod_dir
 
-    # Copy any extracted loose dll files, move them to BepInEx/plugins.
-    cp $tmp_extracted_dir/*.dll $plugins_mod_dir 2> /dev/null
-    rm $tmp_extracted_dir/*.dll 2> /dev/null
-
     # Copy the BepInEx directory to where it needs to go. Some mods have the p in plugins capitalized
     cp -rf $tmp_extracted_dir/BepInEx/plugins/* $plugins_mod_dir 2> /dev/null
     cp -rf $tmp_extracted_dir/BepInEx/Plugins/* $plugins_mod_dir 2> /dev/null
     rm -rf $tmp_extracted_dir/BepInEx 2> /dev/null
 
     # Copy the user/mods directory to where it needs to go and the cleanup
-    cp -rf $tmp_extracted_dir/SPT/* $mounted_dir 2> /dev/null
-    rm -rf $tmp_extracted_dir/SPT 2> /dev/null
+    cp -rf $tmp_extracted_dir/SPT_Runtime/* $spt_dir 2> /dev/null
+    rm -rf $tmp_extracted_dir/SPT_Runtime 2> /dev/null
 
     # Move any txt or md files (usually with licenses and readme's) and executables (like ModSync and SVM) to the parent directory
-    cp $tmp_extracted_dir/*.txt $mounted_dir 2> /dev/null
+    cp $tmp_extracted_dir/*.txt $spt_dir 2> /dev/null
     rm $tmp_extracted_dir/*.txt 2> /dev/null
 
-    cp $tmp_extracted_dir/*.md $mounted_dir 2> /dev/null
+    cp $tmp_extracted_dir/*.md $spt_dir 2> /dev/null
     rm $tmp_extracted_dir/*.md 2> /dev/null
 
     cp $tmp_extracted_dir/*.exe $mounted_dir 2> /dev/null

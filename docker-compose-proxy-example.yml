@@ -1,0 +1,57 @@
+# This is an example of a docker-compose if you are using Traefik as a reverse proxy to reach your SPT server without needing to bind your SPT server to the hosts port 6969
+services:
+  fika-server:
+    container_name: spt-server
+    image: ghcr.io/zhliau/fika-spt-server-docker:latest
+    networks:
+      - whatever you named the traefik proxy network here
+    environment:
+      # SPT Backend IP:PORT that the Game (once launched) will try to reach to load your profile data so you can play
+      - SPT_BACKEND_IP="spt-tarkov.DOMAINHERE"  # 0.0.0.0 will listen to all networks, change this to tell the SPT client the IP to connect in order to load profiles (or your domain name if using a reverse proxy)
+      - SPT_BACKEND_PORT=443 # The port to reach this server. If you're using a reverse proxy, set it to the port that needs (likely 443 for HTTPS) 
+      # NOTE: If when you launch the game you never see "Loading user profile" and it hangs. Log into your SPT web UI (Launcher > Log in to your server > SIC on the left side > login as user "spt" and password "spt", go to config editor > http >
+      # # and click Load clean config from disk > then click Apply. You'll see your values for backendIp and backendPort in the web UI now and you can re-attempt launching the game. 
+
+      # Provide the uid/gid of the user, or it will default to 0 (root)
+      - UID=1000
+      - GID=1000
+
+      # FIKA_MODE controls Fika installation and updates
+      # Options: disabled (no Fika), install (install and validate), auto-update (auto-update on mismatch), custom (skip validation)
+      - FIKA_MODE=auto-update
+      - FIKA_VERSION=2.4.1
+
+      # If you want the container to update SPT automatically if it detects the SPT server version does not match expected version, set this to true
+      - AUTO_UPDATE_SPT=true
+
+      # If you don't want the container to change the file ownership of your server files, set this to false
+      - TAKE_OWNERSHIP=true
+
+      # If you don't want to automatically back up profiles, set this to false
+      - ENABLE_PROFILE_BACKUPS=true
+
+      # If you want to override the timezone. See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a list of valid TZ codes
+      # - TZ=
+
+      # - INSTALL_OTHER_MODS=true
+      # - MOD_URLS_TO_DOWNLOAD= >
+      #     https://github.com/DrakiaXYZ/SPT-EasyAmmoNames-CSharp/releases/download/2.1.0/EasyAmmoNames-2.1.0.7z
+      #     other URLS for SP Mods 
+      # If you want to override the SPT version for this container, set this variable to the version string
+      # The version should follow the release archive name format <SPT_VERSION>-<EFT_BUILD_NUMBER>-<SPT_GIT_SHA>
+      # user folder backups will be disabled. You can find the archives from the releases here https://github.com/SP-Tushonka/build
+
+      # - FORCE_SPT_VERSION=4.0.2-40087-0df4ae7
+    volumes:
+      # Set this to the directory on your host containing either your existing SPT server files or where you wish to store a new SPT server install
+      - ./k-server:/opt/server
+    labels:
+      traefik.enable: true
+      traefik.docker.network: "whatever you named the traefik proxy network"
+      traefik.tcp.routers.spt-tarkov.entrypoints: "websecure" # whatever you have named your https port 443 entrypoint
+      traefik.tcp.routers.spt-tarkov.rule: "HostSNI(`spt-tarkov.DOMAINHERE`)" # Tell Traefik if you see this url spt-tarkov.DOMAINHERE (i.e. spt-tarkov.coolguy.com) route it using this spt-tarkov router we defined 
+      traefik.tcp.routers.spt-tarkov.service: "spt-tarkov" # the container name the tcp router spt-tarkov should point to (they're named the same)
+      traefik.tcp.routers.spt-tarkov.tls.passthrough: true # TLS passthrough is essential as the SPT server needs to handle all communication or you'll see JSON token errors in your launcher log_driver:
+      traefik.tcp.services.spt-tarkov.loadbalancer.server.port: 6969 # Redirect the traffic to the containers port 6969 so hitting spt-tarkov.DOMAINHERE will reach the game server 
+
+
