@@ -58,9 +58,10 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         SPT_COMMIT=$(git rev-parse --short HEAD) && \
         SPT_BUILD_TIME=$(date +%Y%m%d) && \
         echo "Building SPT ${SPT_VERSION_NUM} (commit: ${SPT_COMMIT}, date: ${SPT_BUILD_TIME})" && \
-        echo "Project file: ./SPTarkov.Server/SPTarkov.Server.csproj" && \
-        ls -la ./SPTarkov.Server/ && \
-        dotnet publish ./SPTarkov.Server/SPTarkov.Server.csproj \
+        SPT_PROJECT=$(find . -name SPTarkov.Server.csproj -not -path "*/obj/*" | head -1) && \
+        if [ -z "$SPT_PROJECT" ]; then echo "SPTarkov.Server.csproj not found, repo layout:" && ls -la && find . -maxdepth 2 -name "*.csproj" && exit 1; fi && \
+        echo "Project file: ${SPT_PROJECT}" && \
+        dotnet publish "${SPT_PROJECT}" \
             -c "${SPT_BUILD_CONFIG}" \
             -r linux-arm64 \
             --self-contained false \
@@ -72,7 +73,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
             -p:IsPublish=true \
             -p:LangVersion=preview && \
         echo "Build completed, checking output..." && \
-        find SPTarkov.Server/bin -type d -name "publish" && \
+        find . -type d -path "*/bin/*" -name publish && \
         cd ..; \
     fi
 
@@ -83,7 +84,8 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
     else \
         echo "=== ARM64: Moving compiled files ===" && \
         mkdir -p /opt/build/SPT_Runtime && \
-        PUBLISH_DIR=$(find spt/SPTarkov.Server/bin -type d -name "publish" | head -1) && \
+        PUBLISH_DIR=$(find spt -type d -path "*/bin/*" -name publish | head -1) && \
+        if [ -z "${PUBLISH_DIR}" ]; then echo "No publish directory found" && exit 1; fi && \
         echo "Found publish directory: ${PUBLISH_DIR}" && \
         rm -f ${PUBLISH_DIR}/*.pdb && \
         mv ${PUBLISH_DIR}/* /opt/build/SPT_Runtime/; \
