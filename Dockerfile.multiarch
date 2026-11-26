@@ -3,7 +3,10 @@
 # - ARM64: Compiles from source (necessary for ARM support)
 
 # Stage 1: Download pre-compiled binaries for AMD64 OR build from source for ARM64
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS builder
+# Always run the builder on the build host's own architecture. The arm64 server is cross-compiled with
+# `dotnet publish -r linux-arm64` (framework-dependent, no native compile), so no emulation is needed here.
+# TARGETARCH below still refers to the platform being built for.
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS builder
 
 ARG SPT_VERSION=4.1.6-40743-731d7a2
 ARG SPT_RELEASE_URL=https://mirror.sp-tushonka.com/builds
@@ -58,8 +61,8 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         SPT_COMMIT=$(git rev-parse --short HEAD) && \
         SPT_BUILD_TIME=$(date +%Y%m%d) && \
         echo "Building SPT ${SPT_VERSION_NUM} (commit: ${SPT_COMMIT}, date: ${SPT_BUILD_TIME})" && \
-        SPT_PROJECT=$(find . -name SPTarkov.Server.csproj -not -path "*/obj/*" | head -1) && \
-        if [ -z "$SPT_PROJECT" ]; then echo "SPTarkov.Server.csproj not found, repo layout:" && ls -la && find . -maxdepth 2 -name "*.csproj" && exit 1; fi && \
+        SPT_PROJECT=$(find . -name "SPT*.Server.csproj" -not -path "*/obj/*" | head -1) && \
+        if [ -z "$SPT_PROJECT" ]; then echo "SPT server csproj not found, repo layout:" && ls -la && find . -maxdepth 2 -name "*.csproj" && exit 1; fi && \
         echo "Project file: ${SPT_PROJECT}" && \
         dotnet publish "${SPT_PROJECT}" \
             -c "${SPT_BUILD_CONFIG}" \
