@@ -1,12 +1,15 @@
 #!/bin/bash
 # Script to automatically fetch the latest SPT version information
-# This extracts the download URL from sp-tarkov/build release notes
+# This extracts the download URL from the SPT build repo's release notes (SP-Tushonka/build by default)
 
 set -e
 
+# GitHub repo whose releases are checked. sp-tarkov/build was archived after 4.1.2, later releases are published by SP-Tushonka/build
+SPT_BUILD_REPO=${SPT_BUILD_REPO:-SP-Tushonka/build}
+
 # Function to get the latest SPT version from release download URL
 get_latest_spt_version() {
-    local github_api="https://api.github.com/repos/sp-tarkov/build/releases/latest"
+    local github_api="https://api.github.com/repos/${SPT_BUILD_REPO}/releases/latest"
 
     echo "Fetching latest SPT release from GitHub..." >&2
 
@@ -19,8 +22,8 @@ get_latest_spt_version() {
     fi
 
     # Extract the download URL from release notes
-    # Format: https://spt-releases.modd.in/SPT-4.0.13-40087-2891fd4.7z
-    local download_url=$(echo "$release_body" | grep -oP 'https://spt-releases\.modd\.in/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
+    # Format: https://mirror.sp-tushonka.com/builds/SPT-4.1.6-40743-731d7a2.7z
+    local download_url=$(echo "$release_body" | grep -oP 'https://[^\s)"]+/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
 
     if [ -z "$download_url" ]; then
         echo "Error: Could not find download URL in release notes" >&2
@@ -30,9 +33,9 @@ get_latest_spt_version() {
     fi
 
     # Extract version string from URL
-    # From: https://spt-releases.modd.in/SPT-4.0.13-40087-2891fd4.7z
-    # To: 4.0.13-40087-2891fd4
-    local full_version=$(echo "$download_url" | sed -E 's|https://spt-releases\.modd\.in/SPT-||; s|\.7z$||')
+    # From: https://mirror.sp-tushonka.com/builds/SPT-4.1.6-40743-731d7a2.7z
+    # To: 4.1.6-40743-731d7a2
+    local full_version=$(echo "$download_url" | sed -E 's|.*/SPT-||; s|\.7z$||')
 
     if [ -z "$full_version" ]; then
         echo "Error: Could not parse version from URL: $download_url" >&2
@@ -49,7 +52,7 @@ get_latest_spt_version() {
 get_version_from_release() {
     local version_tag="$1"
 
-    local github_api="https://api.github.com/repos/sp-tarkov/build/releases/tags/${version_tag}"
+    local github_api="https://api.github.com/repos/${SPT_BUILD_REPO}/releases/tags/${version_tag}"
 
     echo "Fetching release info for version ${version_tag}..." >&2
 
@@ -62,7 +65,7 @@ get_version_from_release() {
     fi
 
     # Extract the download URL from release notes
-    local download_url=$(echo "$release_body" | grep -oP 'https://spt-releases\.modd\.in/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
+    local download_url=$(echo "$release_body" | grep -oP 'https://[^\s)"]+/SPT-[0-9.]+-[0-9]+-[a-f0-9]+\.7z' | head -n1)
 
     if [ -z "$download_url" ]; then
         echo "Error: Could not find download URL in release notes for ${version_tag}" >&2
@@ -70,7 +73,7 @@ get_version_from_release() {
     fi
 
     # Extract version string from URL
-    local full_version=$(echo "$download_url" | sed -E 's|https://spt-releases\.modd\.in/SPT-||; s|\.7z$||')
+    local full_version=$(echo "$download_url" | sed -E 's|.*/SPT-||; s|\.7z$||')
 
     if [ -z "$full_version" ]; then
         echo "Error: Could not parse version from URL: $download_url" >&2
