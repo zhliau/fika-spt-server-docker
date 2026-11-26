@@ -9,7 +9,7 @@ gid=${GID:-1000}
 backup_dir_name=${BACKUP_DIR:-backups}
 backup_dir=$mounted_dir/$backup_dir_name
 
-spt_version=${SPT_VERSION:-4.0.13-40087-2891fd4}
+spt_version=${SPT_VERSION:-4.1.6-40743-731d7a2}
 spt_version=$(echo $spt_version | cut -d '-' -f 1)
 spt_backup_dir=$backup_dir/spt/$(date +%Y%m%dT%H%M)
 # if force spt version, ignore all version checks and disable user folder backup
@@ -18,12 +18,14 @@ forced_spt_version_archive=SPT-${force_spt_version}.7z
 
 nodejs_spt_data_dir=$mounted_dir/SPT_Data
 spt_nodejs_core_config=$nodejs_spt_data_dir/Server/configs/core.json
-spt_dir=$mounted_dir/SPT
+spt_dir=$mounted_dir/SPT_Runtime
 spt_data_dir=$spt_dir/SPT_Data
 enable_spt_listen_on_all_networks=${LISTEN_ALL_NETWORKS:-false}
+# Where SPT release archives (SPT-<version>.7z) are downloaded from. Override to use a different mirror.
+spt_release_url=${SPT_RELEASE_URL:-https://mirror.sp-tushonka.com/builds}
 
 
-fika_version=${FIKA_VERSION:-2.3.2}
+fika_version=${FIKA_VERSION:-2.4.2}
 fika_mode=${FIKA_MODE:-disabled}
 fika_backup_dir=$backup_dir/fika/$(date +%Y%m%dT%H%M)
 fika_config_path=assets/configs/fika.jsonc
@@ -149,7 +151,8 @@ validate() {
         fi
 
         # Validate fika version based on FIKA_MODE
-        # Since they (fika) don't use proper versioning, but they do include the release SHA in the DLL, we can use that to check if we need to update
+        # Since they (fika) don't use proper versioning, we check the DLL's ProductVersion. Some builds include the release SHA ("<version>+<sha>"),
+        # others (e.g. 2.4.2) only report "<version>". Compare the SHA when we have one, otherwise compare the version number.
         # TODO: Add proper version check to validate if there is a new version available.
             # This is essentially done by running a curl against fika github for all releases and checking for a later version than expected $fika_version
         case "$fika_mode" in
@@ -158,10 +161,21 @@ validate() {
                 ;;
             install|auto-update)
                 if [[ -f $fika_mod_dir/FikaServer.dll ]]; then
-                    fika_local_SHA=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll | grep -oP '[0-9.]+\+\K.*')
+                    fika_local_version=$(exiftool -s -s -s -ProductVersion $fika_mod_dir/FikaServer.dll)
+                    fika_local_SHA=$(grep -oP '[0-9.]+\+\K.*' <<< "$fika_local_version")
                 fi
-                if [[ "$fika_local_SHA" != "$fika_remote_SHA" ]]; then
-                    echo "Fika SHA mismatch: found:$fika_local_SHA != expected:$fika_remote_SHA"
+                if [[ -n "$fika_local_SHA" && -n "$fika_remote_SHA" ]]; then
+                    fika_check=SHA
+                    fika_found=$fika_local_SHA
+                    fika_expected=$fika_remote_SHA
+                else
+                    # No SHA to compare (not embedded in the DLL, or the GitHub API lookup failed), compare version numbers instead
+                    fika_check=version
+                    fika_found=${fika_local_version%%[+-]*}
+                    fika_expected=$fika_version
+                fi
+                if [[ -z "$fika_found" || "$fika_found" != "$fika_expected" ]]; then
+                    echo "Fika $fika_check mismatch: found:$fika_found != expected:$fika_expected"
                     if [[ "$fika_mode" == "auto-update" ]]; then
                         echo "Auto-updating Fika version to $fika_version"
                         try_update_fika
@@ -235,8 +249,9 @@ install_fika_mod() {
     echo "Installing Fika servermod version $fika_version"
     # Assumes fika_server.zip artifact contains user/mods/fika-server
     curl -sL $fika_release_url -O
-    unzip -q $fika_artifact -d $mounted_dir/temp_fika/
-    mv $mounted_dir/temp_fika/SPT/user/mods/fika-server $spt_dir/user/mods/
+    unzip -qo $fika_artifact -d $mounted_dir/temp_fika/
+    mkdir -p "$spt_dir/user/mods"
+    mv $mounted_dir/temp_fika/SPT_Runtime/user/mods/fika-server $spt_dir/user/mods/
     rm -r $mounted_dir/temp_fika
     rm $fika_artifact
     echo "Installation complete"
@@ -283,8 +298,12 @@ install_spt() {
         cd ${mounted_dir}
         # check if archive already exists, and extract if so
         if [[ ! -f ${forced_spt_version_archive} ]]; then
-            echo "Downloading https://spt-releases.modd.in/SPT-${force_spt_version}.7z"
-            curl -sL "https://spt-releases.modd.in/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}
+            echo "Downloading ${spt_release_url}/SPT-${force_spt_version}.7z"
+            if ! curl -fsSL "${spt_release_url}/SPT-${force_spt_version}.7z" -o ${forced_spt_version_archive}; then
+                echo "Failed to download ${spt_release_url}/SPT-${force_spt_version}.7z, leaving the existing server files untouched"
+                rm -f ${forced_spt_version_archive}
+                exit 1
+            fi
             # Remove the server files, since databases tend to be different between versions
             rm -rf $spt_data_dir
             7zz x ${forced_spt_version_archive} -aoa

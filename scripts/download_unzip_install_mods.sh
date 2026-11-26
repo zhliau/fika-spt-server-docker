@@ -222,6 +222,8 @@ move_extracted_files() {
     # Copy the user/mods directory to where it needs to go and the cleanup
     cp -rf $tmp_extracted_dir/SPT/* $mounted_dir 2> /dev/null
     rm -rf $tmp_extracted_dir/SPT 2> /dev/null
+    cp -rf $tmp_extracted_dir/SPT_Runtime/* $mounted_dir 2> /dev/null
+    rm -rf $tmp_extracted_dir/SPT_Runtime 2> /dev/null
 
     # Move any txt or md files (usually with licenses and readme's) and executables (like ModSync and SVM) to the parent directory
     cp $tmp_extracted_dir/*.txt $mounted_dir 2> /dev/null
